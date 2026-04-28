@@ -6,6 +6,7 @@ import {
   Navigate,
   useLocation,
 } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -63,6 +64,7 @@ function App() {
   return (
     <BrowserRouter>
       <AppLayout />
+      <Analytics />
     </BrowserRouter>
   );
 }
