@@ -1,0 +1,102 @@
+.tableWrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 600px;
+}
+
+.table thead {
+  background: var(--blue);
+}
+
+.table thead th {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.8);
+  padding: 14px 12px;
+  text-align: center;
+}
+
+.table thead th.teamCol {
+  text-align: left;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--gray-100);
+  transition: background 0.15s ease;
+}
+
+.table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background: var(--off-white);
+}
+
+.table tbody td {
+  padding: 13px 12px;
+  text-align: center;
+  color: var(--gray-600);
+}
+
+.pos {
+  width: 40px;
+  font-weight: 700;
+  color: var(--gray-800) !important;
+}
+
+.teamCol {
+  text-align: left !important;
+  font-weight: 600;
+  color: var(--gray-800) !important;
+}
+
+.pts {
+  font-family: var(--font-display);
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: var(--gray-800) !important;
+}
+
+.clubRow {
+  background: #eef3fb !important;
+}
+
+.clubRow td {
+  color: var(--blue-dark) !important;
+}
+
+.clubRow .pts {
+  color: var(--blue) !important;
+}
+
+.clubName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.minibadge {
+  height: 20px;
+  width: auto;
+}
+
+.gdPos {
+  color: var(--green-dark) !important;
+  font-weight: 700 !important;
+}
+
+.gdNeg {
+  color: #c0392b !important;
+  font-weight: 700 !important;
+}

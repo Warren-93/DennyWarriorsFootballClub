@@ -1,0 +1,333 @@
+.page {
+  padding-top: var(--nav-height);
+}
+
+/* Hero */
+.hero {
+  position: relative;
+  min-height: 560px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 50%, var(--green-dark) 100%);
+  overflow: hidden;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.heroContent {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: 48px;
+  padding-bottom: 72px;
+  gap: 16px;
+}
+
+.heroBadge {
+  height: 120px;
+  width: auto;
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.3));
+  animation: floatIn 0.6s ease both;
+}
+
+.heroTitle {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 6vw, 72px);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--white);
+  line-height: 1.05;
+  animation: floatIn 0.6s 0.1s ease both;
+}
+
+.heroSub {
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  animation: floatIn 0.6s 0.2s ease both;
+}
+
+.heroButtons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 8px;
+  animation: floatIn 0.6s 0.3s ease both;
+}
+
+@keyframes floatIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Stats bar */
+.statsBar {
+  background: var(--gray-800);
+  padding: 24px 0;
+}
+
+.statsGrid {
+  display: flex;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.statItem {
+  flex: 1;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 16px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+
+.statItem:last-child {
+  border-right: none;
+}
+
+.statsLoading {
+  color: rgba(255,255,255,0.4);
+  font-size: 13px;
+  padding: 12px 0;
+  letter-spacing: 0.5px;
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+}
+
+/* Next Fixture */
+.fixtureSection {
+  background: var(--off-white);
+}
+
+.nextFixture {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+  padding: 40px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.nextFixtureLabel {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.matchup {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.team {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.teamRight {
+  align-items: center;
+}
+
+.teamBadge {
+  height: 72px;
+}
+
+.opponentPlaceholder {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--gray-100);
+  border: 2px solid var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--gray-400);
+}
+
+.vsBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.vs {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--gray-800);
+}
+
+.matchDate {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.matchTime {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+.matchVenue {
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+/* Results */
+.resultsSection {
+  background: var(--white);
+}
+
+.resultsList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.resultRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+  background: var(--off-white);
+  font-size: 14px;
+  flex-wrap: wrap;
+}
+
+.resultDate {
+  color: var(--gray-600);
+  min-width: 160px;
+}
+
+.resultVenue {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--gray-400);
+  width: 16px;
+}
+
+.resultOpponent {
+  flex: 1;
+  font-weight: 600;
+  min-width: 140px;
+}
+
+.resultScore {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--gray-800);
+  min-width: 60px;
+  text-align: center;
+}
+
+/* News */
+.newsSection {
+  background: var(--off-white);
+}
+
+.newsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.newsCard {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.newsCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.07);
+}
+
+.newsCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.newsDate {
+  font-size: 12px;
+  color: var(--gray-400);
+}
+
+.newsTitle {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--gray-800);
+}
+
+.newsExcerpt {
+  font-size: 14px;
+  color: var(--gray-600);
+  line-height: 1.6;
+  flex: 1;
+}
+
+.newsAuthor {
+  font-size: 12px;
+  color: var(--gray-400);
+  font-style: italic;
+}
+
+@media (max-width: 600px) {
+  .matchup {
+    flex-direction: column;
+  }
+  .nextFixture {
+    padding: 24px 16px;
+  }
+}

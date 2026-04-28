@@ -1,0 +1,445 @@
+.adminShell {
+  min-height: 100vh;
+  padding: 32px 24px 48px;
+  background:
+    radial-gradient(circle at top left, rgba(45, 95, 166, 0.2), transparent 28%),
+    radial-gradient(circle at top right, rgba(30, 138, 60, 0.18), transparent 24%),
+    linear-gradient(180deg, #f7fafc 0%, #edf2f7 100%);
+}
+
+.adminFrame {
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(45, 95, 166, 0.12);
+  color: #1e4278;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pageTitle,
+.loginTitle {
+  font-family: var(--font-display);
+  font-size: clamp(2.75rem, 4vw, 4.5rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: #0f1720;
+}
+
+.pageSubtitle,
+.loginCopy {
+  max-width: 640px;
+  margin-top: 14px;
+  color: #4d5a6a;
+  font-size: 1rem;
+}
+
+.adminHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.headerActions,
+.formActions,
+.cardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.sectionTabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.sectionTab {
+  min-height: 52px;
+  padding: 12px 16px;
+  border: 1px solid rgba(15, 23, 32, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.76);
+  color: #1c2835;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.sectionTab:hover {
+  transform: translateY(-1px);
+  border-color: rgba(45, 95, 166, 0.28);
+  box-shadow: 0 14px 28px rgba(15, 23, 32, 0.06);
+}
+
+.sectionTabActive {
+  border-color: rgba(45, 95, 166, 0.38);
+  background: linear-gradient(135deg, #2d5fa6 0%, #1e8a3c 100%);
+  color: #ffffff;
+}
+
+.workspace,
+.loginLayout {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+  gap: 24px;
+}
+
+.editorPanel,
+.listPanel,
+.loginPanel,
+.loginIntro {
+  border: 1px solid rgba(15, 23, 32, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 20px 48px rgba(15, 23, 32, 0.08);
+}
+
+.loginIntro {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 560px;
+  background:
+    linear-gradient(135deg, rgba(45, 95, 166, 0.96) 0%, rgba(30, 138, 60, 0.9) 100%),
+    #1e4278;
+  color: #ffffff;
+}
+
+.loginCopy {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.backLink {
+  width: fit-content;
+  margin-top: 28px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.loginPanel,
+.editorPanel,
+.listPanel {
+  padding: 28px;
+}
+
+.loginForm,
+.editorForm {
+  display: grid;
+  gap: 18px;
+}
+
+.formHeader h2,
+.panelHeader h2 {
+  color: #0f1720;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.formHeader p,
+.panelHeader p {
+  margin-top: 8px;
+  color: #5b6775;
+  font-size: 0.95rem;
+}
+
+.devCredentials {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px dashed rgba(45, 95, 166, 0.28);
+  border-radius: 8px;
+  background: rgba(45, 95, 166, 0.06);
+  color: #1e4278;
+  font-size: 0.92rem;
+}
+
+.devCredentials strong {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field span {
+  color: #1c2835;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid #cbd4de;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #16202c;
+  font-size: 0.98rem;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: rgba(45, 95, 166, 0.65);
+  box-shadow: 0 0 0 4px rgba(45, 95, 166, 0.12);
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.fieldWide {
+  grid-column: 1 / -1;
+}
+
+.fieldCheckbox {
+  align-self: end;
+}
+
+.checkboxField {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid #cbd4de;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.checkboxField input {
+  width: 18px;
+  height: 18px;
+}
+
+.checkboxField span {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.primaryButton,
+.secondaryButton,
+.ghostButton,
+.dangerButton {
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
+}
+
+.primaryButton:hover,
+.secondaryButton:hover,
+.ghostButton:hover,
+.dangerButton:hover {
+  transform: translateY(-1px);
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled,
+.ghostButton:disabled,
+.dangerButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.primaryButton {
+  background: linear-gradient(135deg, #2d5fa6 0%, #1e8a3c 100%);
+  color: #ffffff;
+  box-shadow: 0 16px 30px rgba(45, 95, 166, 0.22);
+}
+
+.secondaryButton {
+  border: 1px solid rgba(45, 95, 166, 0.25);
+  background: rgba(45, 95, 166, 0.08);
+  color: #1e4278;
+}
+
+.ghostButton {
+  border: 1px solid rgba(15, 23, 32, 0.08);
+  background: #ffffff;
+  color: #16202c;
+}
+
+.dangerButton {
+  border: 1px solid rgba(176, 47, 47, 0.18);
+  background: rgba(176, 47, 47, 0.08);
+  color: #9f2727;
+}
+
+.recordList {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.recordCard {
+  padding: 18px;
+  border: 1px solid rgba(15, 23, 32, 0.08);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fbfd 100%);
+}
+
+.recordTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.recordTitle {
+  color: #0f1720;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.recordMeta {
+  margin-top: 6px;
+  color: #5b6775;
+  font-size: 0.92rem;
+}
+
+.recordBadge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(45, 95, 166, 0.1);
+  color: #1e4278;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.inlineStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0;
+  color: #203142;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.emptyState,
+.successBanner,
+.errorBanner {
+  padding: 14px 16px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.emptyState {
+  border: 1px dashed rgba(15, 23, 32, 0.14);
+  background: rgba(255, 255, 255, 0.68);
+  color: #5b6775;
+  text-align: center;
+}
+
+.successBanner {
+  margin-bottom: 20px;
+  border: 1px solid rgba(30, 138, 60, 0.18);
+  background: rgba(30, 138, 60, 0.08);
+  color: #155e29;
+}
+
+.errorBanner {
+  margin-bottom: 20px;
+  border: 1px solid rgba(176, 47, 47, 0.18);
+  background: rgba(176, 47, 47, 0.08);
+  color: #9f2727;
+}
+
+.orDivider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #738091;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.orDivider::before,
+.orDivider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #d7dde5;
+}
+
+.orDivider span {
+  padding: 0 12px;
+}
+
+@media (max-width: 1080px) {
+  .workspace,
+  .loginLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionTabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .adminShell {
+    padding: 20px 16px 32px;
+  }
+
+  .adminHeader,
+  .recordTop {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .formGrid,
+  .sectionTabs {
+    grid-template-columns: 1fr;
+  }
+
+  .loginIntro,
+  .loginPanel,
+  .editorPanel,
+  .listPanel {
+    padding: 22px;
+  }
+}

@@ -1,0 +1,118 @@
+.filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 36px;
+}
+
+.filterBtn {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 1.5px solid var(--gray-200);
+  background: var(--white);
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filterBtn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.filterActive {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--white) !important;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.07);
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.date {
+  font-size: 12px;
+  color: var(--gray-400);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--gray-800);
+}
+
+.excerpt {
+  font-size: 14px;
+  color: var(--gray-600);
+  line-height: 1.65;
+  flex: 1;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gray-100);
+}
+
+.author {
+  font-size: 12px;
+  color: var(--gray-400);
+  font-style: italic;
+}
+
+.readMore {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--blue);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.readMore:hover {
+  color: var(--blue-dark);
+}
+
+.empty {
+  text-align: center;
+  color: var(--gray-400);
+  padding: 48px 0;
+  font-size: 15px;
+}

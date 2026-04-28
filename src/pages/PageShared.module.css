@@ -1,0 +1,147 @@
+.page {
+  padding-top: var(--nav-height);
+  min-height: 100vh;
+}
+
+.pageHero {
+  background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 100%);
+  padding: 56px 0 48px;
+}
+
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 60px);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.pageSubtitle {
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.55);
+  text-transform: uppercase;
+}
+
+/* Match card shared by Fixtures + Results */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.matchCard {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.matchCard:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
+}
+
+.matchMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 200px;
+  flex-wrap: wrap;
+}
+
+.matchDateText {
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+.matchTime {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+.matchTeams {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.team {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--gray-600);
+}
+
+.teamHighlight {
+  color: var(--blue);
+}
+
+.separator {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-400);
+  letter-spacing: 1px;
+}
+
+.scoreBlock {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--gray-800);
+  min-width: 70px;
+  text-align: center;
+}
+
+.matchVenueTag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* Competition filter tabs — used by Fixtures and Results */
+.filterRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
+.filterBtn {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 1.5px solid var(--gray-200);
+  background: var(--white);
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filterBtn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.filterActive {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--white) !important;
+}
