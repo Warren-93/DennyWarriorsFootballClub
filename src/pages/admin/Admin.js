@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   clearAuthToken,
-  fetchSquad,
+  fetchAllPlayersForAdmin,
   createPlayer,
   updatePlayer,
   deletePlayer,
@@ -60,7 +60,7 @@ const SECTION_META = {
 const RESOURCE_CONFIG = {
   squad: {
     singular: 'Player',
-    fetchAll: fetchSquad,
+    fetchAll: fetchAllPlayersForAdmin,
     createItem: createPlayer,
     updateItem: updatePlayer,
     deleteItem: deletePlayer,
@@ -76,6 +76,9 @@ const RESOURCE_CONFIG = {
       playerProfileImage: '',
       playerInfoCard: '',
       bio: '',
+      sponsorLogo1: '',
+      sponsorLogo2: '',
+      sponsorLogo3: '',
     }),
     fields: [
       { name: 'playerFirstName', label: 'First name', type: 'text', required: true },
@@ -88,6 +91,9 @@ const RESOURCE_CONFIG = {
       { name: 'appearances', label: 'Appearances', type: 'number', min: 0 },
       { name: 'playerProfileImage', label: 'Profile image URL', type: 'text' },
       { name: 'playerInfoCard', label: 'Info-card image URL', type: 'text' },
+      { name: 'sponsorLogo1', label: 'Sponsor logo 1 URL', type: 'text' },
+      { name: 'sponsorLogo2', label: 'Sponsor logo 2 URL', type: 'text' },
+      { name: 'sponsorLogo3', label: 'Sponsor logo 3 URL', type: 'text' },
       { name: 'bio', label: 'Bio', type: 'textarea', rows: 4 },
     ],
     summary: (item) => `${item.playerFirstName || ''} ${item.playerSurename || ''}`.trim() + (item.playerNumber ? ` · #${item.playerNumber}` : ''),

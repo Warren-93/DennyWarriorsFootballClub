@@ -6,13 +6,6 @@ import styles from './Squad.module.css';
 
 const positions = ['All', 'Goalkeeper', 'Defender', 'Midfielder', 'Forward'];
 
-const positionColours = {
-  Goalkeeper: { bg: '#fff3e0', text: '#b35a00' },
-  Defender:   { bg: '#e8eef8', text: '#1e4278' },
-  Midfielder: { bg: '#e6f4eb', text: '#155e29' },
-  Forward:    { bg: '#fde8e8', text: '#922b21' },
-};
-
 function getPlayerName(player) {
   const fullName = player?.name?.trim();
   if (fullName) return fullName;
@@ -76,31 +69,50 @@ export default function Squad() {
         >
           <div className={styles.grid}>
             {filtered.map(player => {
-              const colours = positionColours[player.position] || positionColours.Defender;
               const name = getPlayerName(player);
               const number = player.number ?? player.playerNumber ?? '--';
-              const primaryMeta = player.age ? `Age: ${player.age}` : `${player.appearances ?? 0} apps`;
-              const secondaryMeta = player.nationality || `${player.goals ?? 0} goals`;
+              const apps = player.appearances ?? 0;
+              const goals = player.goals ?? 0;
+              const sponsors = player.sponsorLogos || [];
 
               return (
                 <div key={player.id || `${name}-${number}`} className={styles.card}>
-                  <div className={styles.cardTop}>
-                    <span className={styles.number}>{number}</span>
-                    <div className={styles.avatar}>
-                      {getPlayerInitials(name)}
+                  <div className={styles.header}>
+                    <div className={styles.headerRow}>
+                      <h3 className={styles.playerName}>
+                        {name}
+                        {player.captain && <span className={styles.captainTag}>(C)</span>}
+                      </h3>
+                      <span className={styles.playerNumber}>#{number}</span>
                     </div>
                   </div>
-                  <div className={styles.cardBody}>
-                    <h3 className={styles.playerName}>{name}</h3>
-                    <span
-                      className={styles.positionBadge}
-                      style={{ background: colours.bg, color: colours.text }}
-                    >
-                      {player.position}
-                    </span>
-                    <div className={styles.playerMeta}>
-                      <span>{primaryMeta}</span>
-                      <span>{secondaryMeta}</span>
+
+                  <div className={styles.body}>
+                    {sponsors.length > 0 && (
+                      <div className={styles.sponsorColumn}>
+                        <span className={styles.sponsorLabel}>Sponsors</span>
+                        {sponsors.map((url, i) => (
+                          <div key={i} className={styles.sponsorBox}>
+                            <img src={url} alt="Club sponsor" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className={styles.photoColumn}>
+                      {player.profileImage ? (
+                        <img src={player.profileImage} alt={name} className={styles.photo} />
+                      ) : (
+                        <div className={styles.photoPlaceholder}>{getPlayerInitials(name)}</div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className={styles.footer}>
+                    <span className={styles.positionBadge}>{player.position}</span>
+                    <div className={styles.statsRow}>
+                      <span>{apps} apps</span>
+                      <span>{goals} goals</span>
                     </div>
                   </div>
                 </div>

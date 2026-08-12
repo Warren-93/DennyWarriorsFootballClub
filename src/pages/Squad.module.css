@@ -33,86 +33,160 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
 }
 
 .card {
-  background: var(--white);
-  border: 1px solid var(--gray-200);
+  --accent: #9fd8e2;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
   border-radius: var(--radius-lg);
   overflow: hidden;
+  border: 5px solid var(--accent);
+  background: linear-gradient(165deg, #333c44 0%, #14171b 100%);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 28px rgba(0,0,0,0.08);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
 }
 
-.cardTop {
-  background: linear-gradient(135deg, var(--blue) 0%, var(--green) 100%);
-  padding: 24px 20px 20px;
+.header {
+  background: var(--black);
+  padding: 14px 16px 12px;
+  border-bottom: 3px solid var(--accent);
+}
+
+.headerRow {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-.number {
-  font-family: var(--font-display);
-  font-size: 42px;
-  font-weight: 800;
-  color: rgba(255,255,255,0.25);
-  line-height: 1;
-}
-
-.avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.2);
-  border: 2px solid rgba(255,255,255,0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--white);
-}
-
-.cardBody {
-  padding: 16px 20px 20px;
-  display: flex;
-  flex-direction: column;
+  align-items: baseline;
   gap: 8px;
 }
 
 .playerName {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: var(--gray-800);
-  line-height: 1.2;
+  letter-spacing: 0.4px;
+  color: var(--accent);
+  line-height: 1.1;
+  flex: 1;
+}
+
+.playerNumber {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--accent);
+  opacity: 0.65;
+  white-space: nowrap;
+}
+
+.captainTag {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  opacity: 0.8;
+  margin-left: 4px;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 240px;
+}
+
+.sponsorColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 10px;
+  width: 78px;
+  flex-shrink: 0;
+}
+
+.sponsorLabel {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0.85;
+  margin-bottom: 2px;
+}
+
+.sponsorBox {
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sponsorBox img {
+  width: 100%;
+  height: auto;
+  max-height: 40px;
+  object-fit: contain;
+}
+
+.photoColumn {
+  flex: 1;
+  position: relative;
+  min-height: 240px;
+}
+
+.photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.photoPlaceholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.14);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(0, 0, 0, 0.35);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .positionBadge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 20px;
+  font-family: var(--font-display);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  width: fit-content;
+  color: var(--accent);
 }
 
-.playerMeta {
+.statsRow {
   display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: var(--gray-400);
-  margin-top: 4px;
+  gap: 10px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
 }
