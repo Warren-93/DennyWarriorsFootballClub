@@ -1,25 +1,11 @@
-import { request, buildQuery } from './client';
+import { request, buildQuery, unwrapList } from './client';
 
-export function fetchResults(params) {
-  return request(`/results${buildQuery(params)}`);
-}
-
-export function fetchResultById(id) {
-  return request(`/results/${id}`);
+// "Results" are just past fixtures — the backend doesn't have a separate
+// results resource, fixtures carry the score once played.
+export async function fetchResults(params) {
+  return unwrapList(await request(`/fixtures${buildQuery({ ...params, status: 'past' })}`));
 }
 
 export function fetchRecentResults(limit = 5) {
-  return request(`/results${buildQuery({ limit })}`);
-}
-
-export function createResult(result) {
-  return request('/results', { method: 'POST', body: JSON.stringify(result) });
-}
-
-export function updateResult(id, result) {
-  return request(`/results/${id}`, { method: 'PUT', body: JSON.stringify(result) });
-}
-
-export function deleteResult(id) {
-  return request(`/results/${id}`, { method: 'DELETE' });
+  return fetchResults({ limit });
 }

@@ -4,4 +4,5 @@ export * from './squad';
 export * from './news';
 export * from './league';
 export * from './stats';
+export * from './sync';
 export * from './client';

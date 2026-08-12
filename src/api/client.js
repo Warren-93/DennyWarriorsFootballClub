@@ -1,5 +1,5 @@
-const LOCAL_API_BASE_URL = 'http://localhost:8080/api/dennywarriors';
-const API_PATH = '/api/dennywarriors';
+const LOCAL_API_BASE_URL = 'http://localhost:8080/api/v1';
+const API_PATH = '/api/v1';
 
 function getRuntimeApiBaseUrl() {
   if (typeof window === 'undefined') return '';
@@ -134,6 +134,14 @@ export async function request(path, options = {}) {
   }
 
   return parseResponse(response);
+}
+
+// The backend wraps list endpoints as { data, page, size, totalElements }.
+// This unwraps to the plain array the pages expect, and passes non-enveloped
+// payloads (single objects, null from a 204) straight through unchanged.
+export function unwrapList(payload) {
+  if (payload && Array.isArray(payload.data)) return payload.data;
+  return payload;
 }
 
 // Build a query string from a params object. Skips undefined/null/'' values.
