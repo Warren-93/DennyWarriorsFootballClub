@@ -13,6 +13,7 @@ import {
   fetchLeagueTable,
   fetchSeasonStats,
   fetchHistory,
+  fetchVideos,
 } from '../api';
 
 // Stable dep key for object params so we re-fetch when fields change.
@@ -31,3 +32,4 @@ export const useArticle       = (slug)        => useApi(() => fetchArticleBySlug
 export const useLeagueTable   = ()            => useApi(fetchLeagueTable,                  []);
 export const useSeasonStats   = ()            => useApi(fetchSeasonStats,                  []);
 export const useHistory       = (params = {}) => useApi(() => fetchHistory(params),       [key(params)], []);
+export const useVideos        = ()            => useApi(fetchVideos,                       [],            []);

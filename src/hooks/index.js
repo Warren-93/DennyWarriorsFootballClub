@@ -13,4 +13,5 @@ export {
   useLeagueTable,
   useSeasonStats,
   useHistory,
+  useVideos,
 } from './useClubData';
