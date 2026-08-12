@@ -11,3 +11,11 @@ export function fetchFixtureById(id) {
 export function fetchNextFixture() {
   return request('/fixtures/next');
 }
+
+export function fetchSeasons() {
+  return request('/fixtures/seasons');
+}
+
+export function fetchCompetitions() {
+  return request('/fixtures/competitions');
+}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useNews } from '../hooks';
 import ApiState from '../components/ApiState';
 import sharedStyles from './PageShared.module.css';
@@ -64,7 +65,7 @@ export default function News() {
                 <p className={styles.excerpt}>{item.excerpt}</p>
                 <div className={styles.footer}>
                   <span className={styles.author}>By {item.author}</span>
-                  <button className={styles.readMore}>Read more →</button>
+                  <Link to={`/news/${item.slug}`} className={styles.readMore}>Read more →</Link>
                 </div>
               </article>
             ))}

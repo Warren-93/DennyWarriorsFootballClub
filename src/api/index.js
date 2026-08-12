@@ -5,4 +5,6 @@ export * from './news';
 export * from './league';
 export * from './stats';
 export * from './sync';
+export * from './history';
+export * from './users';
 export * from './client';

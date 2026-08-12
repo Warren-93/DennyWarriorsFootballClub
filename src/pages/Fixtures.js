@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useFixtures } from '../hooks';
+import React, { useEffect, useState } from 'react';
+import { useFixtures, useSeasons, useCompetitions } from '../hooks';
 import ApiState from '../components/ApiState';
 import styles from './PageShared.module.css';
 
@@ -9,40 +9,69 @@ function formatDate(dateStr) {
   });
 }
 
-const COMPETITIONS = ['All', 'League', 'Cup'];
-
 export default function Fixtures() {
+  const { data: seasons } = useSeasons();
+  const { data: competitions } = useCompetitions();
+  const [season, setSeason] = useState('');
   const [competition, setCompetition] = useState('All');
-  const params = competition !== 'All' ? { competition } : {};
+
+  // Default to the most recent season once it loads (seasons is newest-first).
+  useEffect(() => {
+    if (!season && seasons && seasons.length > 0) {
+      setSeason(seasons[0]);
+    }
+  }, [seasons, season]);
+
+  const params = {
+    ...(season ? { season } : {}),
+    ...(competition !== 'All' ? { competition } : {}),
+  };
   const { data: fixtures, loading, error, refetch } = useFixtures(params);
+
+  const competitionOptions = ['All', ...(competitions || [])];
 
   return (
     <div className={styles.page}>
       <div className={styles.pageHero}>
         <div className="container">
           <h1 className={styles.pageTitle}>Fixtures</h1>
-          <p className={styles.pageSubtitle}>2024/25 Season — Upcoming Matches</p>
+          <p className={styles.pageSubtitle}>{season || 'All seasons'} — Upcoming Matches</p>
         </div>
       </div>
 
       <div className="container section">
-        <div className={styles.filterRow}>
-          {COMPETITIONS.map(c => (
-            <button
-              key={c}
-              className={`${styles.filterBtn} ${competition === c ? styles.filterActive : ''}`}
-              onClick={() => setCompetition(c)}
+        <div className={styles.filterBar}>
+          <div className={styles.filterRow}>
+            {competitionOptions.map(c => (
+              <button
+                key={c}
+                className={`${styles.filterBtn} ${competition === c ? styles.filterActive : ''}`}
+                onClick={() => setCompetition(c)}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+
+          {seasons && seasons.length > 1 && (
+            <select
+              className={styles.filterSelect}
+              value={season}
+              onChange={(event) => setSeason(event.target.value)}
+              aria-label="Season"
             >
-              {c}
-            </button>
-          ))}
+              {seasons.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          )}
         </div>
 
         <ApiState
           loading={loading}
           error={error}
           empty={!loading && fixtures?.length === 0}
-          emptyMessage="No fixtures scheduled at the moment."
+          emptyMessage="No fixtures scheduled for this season."
           onRetry={refetch}
         >
           <div className={styles.list}>

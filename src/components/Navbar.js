@@ -10,6 +10,7 @@ const navLinks = [
   { to: '/table', label: 'Table' },
   { to: '/squad', label: 'Squad' },
   { to: '/news', label: 'News' },
+  { to: '/history', label: 'History' },
 ];
 
 export default function Navbar() {

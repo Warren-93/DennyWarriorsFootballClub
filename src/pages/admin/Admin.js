@@ -10,15 +10,27 @@ import {
   createArticle,
   updateArticle,
   deleteArticle,
+  fetchHistory,
+  createHistoryEntry,
+  updateHistoryEntry,
+  deleteHistoryEntry,
   fetchFixtures,
   fetchLeagueTable,
   fetchSyncLogs,
   triggerSync,
+  fetchUsers,
+  createUser,
 } from '../../api';
 import styles from './Admin.module.css';
 
 const POSITIONS = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward'];
+const HISTORY_TYPES = ['TIMELINE', 'HONOUR'];
 const DEFAULT_SECTION = 'sync';
+
+// Sections rendered by a dedicated panel component instead of the generic
+// create/edit/delete form below (sync has no editable records; users has no
+// edit/delete at all on the backend, only list + create).
+const CUSTOM_SECTIONS = new Set(['sync', 'users']);
 
 const SECTION_META = {
   sync: {
@@ -32,6 +44,14 @@ const SECTION_META = {
   news: {
     label: 'News',
     description: 'Publish club updates and match reports.',
+  },
+  history: {
+    label: 'History',
+    description: 'Manage the club timeline and honours shown on the History page.',
+  },
+  users: {
+    label: 'Users',
+    description: 'Admin accounts. Only super-admins can create new users.',
   },
 };
 
@@ -107,6 +127,32 @@ const RESOURCE_CONFIG = {
       return `${firstTag} · ${when} · ${item.author || 'Unknown'}`;
     },
     badge: (item) => (item.published ? 'Published' : 'Draft'),
+  },
+  history: {
+    singular: 'History entry',
+    fetchAll: fetchHistory,
+    createItem: createHistoryEntry,
+    updateItem: updateHistoryEntry,
+    deleteItem: deleteHistoryEntry,
+    emptyItem: () => ({
+      type: 'TIMELINE',
+      year: '',
+      title: '',
+      description: '',
+      imageUrl: '',
+      order: 0,
+    }),
+    fields: [
+      { name: 'type', label: 'Type', type: 'select', options: HISTORY_TYPES, required: true },
+      { name: 'year', label: 'Year', type: 'number', required: true },
+      { name: 'title', label: 'Title', type: 'text', required: true },
+      { name: 'order', label: 'Display order', type: 'number', min: 0 },
+      { name: 'imageUrl', label: 'Image URL', type: 'text' },
+      { name: 'description', label: 'Description', type: 'textarea', rows: 4 },
+    ],
+    summary: (item) => item.title,
+    detail: (item) => `${item.year} · order ${item.order}`,
+    badge: (item) => item.type,
   },
 };
 
@@ -364,10 +410,136 @@ function SyncPanel() {
   );
 }
 
+const ROLES = ['SUPER_ADMIN', 'EDITOR', 'VIEWER'];
+
+function UsersPanel() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [form, setForm] = useState({ username: '', password: '', role: 'VIEWER' });
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const result = await fetchUsers();
+      setUsers(Array.isArray(result) ? result : []);
+    } catch (err) {
+      setError(err.message || 'Unable to load users.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function handleCreate(event) {
+    event.preventDefault();
+    setSaving(true);
+    setError('');
+    setMessage('');
+    try {
+      await createUser(form);
+      setMessage(`User "${form.username}" created.`);
+      setForm({ username: '', password: '', role: 'VIEWER' });
+      await load();
+    } catch (err) {
+      setError(err.message || 'Unable to create user.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <>
+      <section className={styles.editorPanel}>
+        <div className={styles.panelHeader}>
+          <h2>Add user</h2>
+          <p>Only super-admins can see this tab or create new accounts.</p>
+        </div>
+
+        <form className={styles.editorForm} onSubmit={handleCreate}>
+          <div className={styles.formGrid}>
+            <label className={styles.field}>
+              <span>Username</span>
+              <input
+                type="text"
+                value={form.username}
+                onChange={(event) => setForm((f) => ({ ...f, username: event.target.value }))}
+                required
+              />
+            </label>
+            <label className={styles.field}>
+              <span>Password</span>
+              <input
+                type="password"
+                value={form.password}
+                onChange={(event) => setForm((f) => ({ ...f, password: event.target.value }))}
+                required
+              />
+            </label>
+            <label className={styles.field}>
+              <span>Role</span>
+              <select
+                value={form.role}
+                onChange={(event) => setForm((f) => ({ ...f, role: event.target.value }))}
+              >
+                {ROLES.map((role) => (
+                  <option key={role} value={role}>{role}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className={styles.formActions}>
+            <button type="submit" className={styles.primaryButton} disabled={saving}>
+              {saving ? 'Creating...' : 'Create user'}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section className={styles.listPanel}>
+        <div className={styles.panelHeader}>
+          <h2>Users</h2>
+          <p>{loading ? 'Refreshing...' : `${users.length} accounts.`}</p>
+        </div>
+
+        {(error || message) ? (
+          <div className={error ? styles.errorBanner : styles.successBanner}>
+            {error || message}
+          </div>
+        ) : null}
+
+        <div className={styles.recordList}>
+          {users.length === 0 ? (
+            <div className={styles.emptyState}>No users yet.</div>
+          ) : (
+            users.map((user) => (
+              <article key={user.id} className={styles.recordCard}>
+                <div className={styles.recordTop}>
+                  <div>
+                    <h3 className={styles.recordTitle}>{user.username}</h3>
+                  </div>
+                  <span className={styles.recordBadge}>{user.role}</span>
+                </div>
+              </article>
+            ))
+          )}
+        </div>
+      </section>
+    </>
+  );
+}
+
 export default function Admin() {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState(DEFAULT_SECTION);
-  const [itemsBySection, setItemsBySection] = useState({ squad: [], news: [] });
+  const [itemsBySection, setItemsBySection] = useState({ squad: [], news: [], history: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -409,7 +581,7 @@ export default function Admin() {
     setEditingId(null);
     setMessage('');
     setError('');
-    if (activeSection !== 'sync') {
+    if (!CUSTOM_SECTIONS.has(activeSection)) {
       resetForm(activeSection);
       loadSection(activeSection);
     }
@@ -523,9 +695,9 @@ export default function Admin() {
           ))}
         </nav>
 
-        {activeSection === 'sync' ? (
+        {CUSTOM_SECTIONS.has(activeSection) ? (
           <div className={styles.workspace}>
-            <SyncPanel />
+            {activeSection === 'sync' ? <SyncPanel /> : <UsersPanel />}
           </div>
         ) : (
           <>
