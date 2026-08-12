@@ -18,6 +18,7 @@ import Squad from './pages/Squad';
 import News from './pages/News';
 import ArticleDetail from './pages/ArticleDetail';
 import History from './pages/History';
+import Media from './pages/Media';
 import Login from './pages/admin/Login';
 import Admin from './pages/admin/Admin';
 import { getAuthToken } from './api';
@@ -46,6 +47,7 @@ function AppLayout() {
           <Route path="/news" element={<News />} />
           <Route path="/news/:slug" element={<ArticleDetail />} />
           <Route path="/history" element={<History />} />
+          <Route path="/media" element={<Media />} />
           <Route path="/admin/login" element={<Login />} />
           <Route
             path="/admin"

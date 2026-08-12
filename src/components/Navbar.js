@@ -11,6 +11,7 @@ const navLinks = [
   { to: '/squad', label: 'Squad' },
   { to: '/news', label: 'News' },
   { to: '/history', label: 'History' },
+  { to: '/media', label: 'Media' },
 ];
 
 export default function Navbar() {
