@@ -12,9 +12,9 @@ export function fetchSyncSettings() {
   return request('/admin/sync/settings');
 }
 
-export function updateSyncSettings(intervalMinutes) {
+export function updateSyncSettings(intervalDays) {
   return request('/admin/sync/settings', {
     method: 'PUT',
-    body: JSON.stringify({ intervalMinutes }),
+    body: JSON.stringify({ intervalDays }),
   });
 }

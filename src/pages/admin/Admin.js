@@ -60,7 +60,7 @@ function SyncPanel() {
   const [logs, setLogs] = useState([]);
   const [fixtures, setFixtures] = useState([]);
   const [table, setTable] = useState([]);
-  const [intervalMinutes, setIntervalMinutes] = useState(null);
+  const [intervalDays, setIntervalDays] = useState(null);
   const [intervalInput, setIntervalInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [triggering, setTriggering] = useState(false);
@@ -81,8 +81,8 @@ function SyncPanel() {
       setLogs(Array.isArray(logsResult) ? logsResult : []);
       setFixtures(Array.isArray(fixturesResult) ? fixturesResult : []);
       setTable(Array.isArray(tableResult) ? tableResult : []);
-      setIntervalMinutes(settingsResult?.intervalMinutes ?? null);
-      setIntervalInput(String(settingsResult?.intervalMinutes ?? ''));
+      setIntervalDays(settingsResult?.intervalDays ?? null);
+      setIntervalInput(String(settingsResult?.intervalDays ?? ''));
     } catch (err) {
       setError(err.message || 'Unable to load sync data.');
     } finally {
@@ -116,8 +116,8 @@ function SyncPanel() {
     setMessage('');
     try {
       const result = await updateSyncSettings(Number(intervalInput));
-      setIntervalMinutes(result?.intervalMinutes ?? null);
-      setMessage(`Auto-sync interval set to every ${result?.intervalMinutes} minute(s).`);
+      setIntervalDays(result?.intervalDays ?? null);
+      setMessage(`Auto-sync interval set to every ${result?.intervalDays} day(s).`);
     } catch (err) {
       setError(err.message || 'Unable to update sync interval.');
     } finally {
@@ -154,13 +154,13 @@ function SyncPanel() {
 
       <h3 className={styles.recordTitle}>Auto-sync frequency</h3>
       <p className={styles.recordMeta} style={{ marginBottom: 14 }}>
-        {intervalMinutes != null
-          ? `Currently syncing automatically every ${intervalMinutes} minute(s).`
+        {intervalDays != null
+          ? `Currently syncing automatically every ${intervalDays} day(s). Fixtures and the league table only change weekly, so daily (or less often) is usually enough.`
           : 'Loading current interval...'}
       </p>
       <form onSubmit={handleSaveInterval} style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 28 }}>
         <label className={styles.field} style={{ maxWidth: 160 }}>
-          <span>Interval (minutes)</span>
+          <span>Interval (days)</span>
           <input
             type="number"
             min="1"
