@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { useSquad } from '../hooks';
+import useAdminRole from '../hooks/useAdminRole';
 import ApiState from '../components/ApiState';
+import PlayerFormModal from '../components/admin/PlayerFormModal';
+import { deletePlayer } from '../api/squad';
 import sharedStyles from './PageShared.module.css';
 import styles from './Squad.module.css';
+import adminStyles from '../components/admin/InlineAdminControls.module.css';
 
 const positions = ['All', 'Goalkeeper', 'Defender', 'Midfielder', 'Forward'];
 
@@ -28,6 +32,9 @@ function getPlayerInitials(name) {
 
 export default function Squad() {
   const [filter, setFilter] = useState('All');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingPlayer, setEditingPlayer] = useState(null);
+  const { canEdit } = useAdminRole();
 
   // Fetch full squad from API; filter client-side for instant tab switching
   const { data: squad, loading, error, refetch } = useSquad();
@@ -37,6 +44,23 @@ export default function Squad() {
     : filter === 'All'
       ? squad
       : squad.filter(p => p.position === filter);
+
+  function openAdd() {
+    setEditingPlayer(null);
+    setModalOpen(true);
+  }
+
+  function openEdit(player) {
+    setEditingPlayer(player);
+    setModalOpen(true);
+  }
+
+  async function handleDelete(player) {
+    const name = getPlayerName(player);
+    if (!window.confirm(`Delete ${name}?`)) return;
+    await deletePlayer(player.id);
+    refetch();
+  }
 
   return (
     <div className={sharedStyles.page}>
@@ -60,6 +84,14 @@ export default function Squad() {
           ))}
         </div>
 
+        {canEdit && (
+          <div className={adminStyles.addBar}>
+            <button type="button" className={adminStyles.addButton} onClick={openAdd}>
+              + Add player
+            </button>
+          </div>
+        )}
+
         <ApiState
           loading={loading}
           error={error}
@@ -77,6 +109,27 @@ export default function Squad() {
 
               return (
                 <div key={player.id || `${name}-${number}`} className={styles.card}>
+                  {canEdit && (
+                    <div className={adminStyles.cardControls}>
+                      <button
+                        type="button"
+                        className={adminStyles.iconButton}
+                        onClick={() => openEdit(player)}
+                        aria-label="Edit player"
+                      >
+                        ✎
+                      </button>
+                      <button
+                        type="button"
+                        className={`${adminStyles.iconButton} ${adminStyles.iconButtonDanger}`}
+                        onClick={() => handleDelete(player)}
+                        aria-label="Delete player"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+
                   <div className={styles.header}>
                     <div className={styles.headerRow}>
                       <h3 className={styles.playerName}>
@@ -121,6 +174,13 @@ export default function Squad() {
           </div>
         </ApiState>
       </div>
+
+      <PlayerFormModal
+        open={modalOpen}
+        item={editingPlayer}
+        onClose={() => setModalOpen(false)}
+        onSaved={refetch}
+      />
     </div>
   );
 }

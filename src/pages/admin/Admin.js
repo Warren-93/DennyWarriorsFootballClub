@@ -3,16 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import {
   clearAuthToken,
   fetchAllPlayersForAdmin,
-  createPlayer,
-  updatePlayer,
   deletePlayer,
   fetchAllArticlesForAdmin,
-  createArticle,
-  updateArticle,
   deleteArticle,
   fetchHistory,
-  createHistoryEntry,
-  updateHistoryEntry,
   deleteHistoryEntry,
   fetchFixtures,
   fetchLeagueTable,
@@ -21,16 +15,12 @@ import {
   fetchUsers,
   createUser,
 } from '../../api';
+import PlayerFormModal from '../../components/admin/PlayerFormModal';
+import ArticleFormModal from '../../components/admin/ArticleFormModal';
+import HistoryEntryFormModal from '../../components/admin/HistoryEntryFormModal';
 import styles from './Admin.module.css';
 
-const POSITIONS = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward'];
-const HISTORY_TYPES = ['TIMELINE', 'HONOUR'];
 const DEFAULT_SECTION = 'sync';
-
-// Sections rendered by a dedicated panel component instead of the generic
-// create/edit/delete form below (sync has no editable records; users has no
-// edit/delete at all on the backend, only list + create).
-const CUSTOM_SECTIONS = new Set(['sync', 'users']);
 
 const SECTION_META = {
   sync: {
@@ -55,124 +45,6 @@ const SECTION_META = {
   },
 };
 
-// All field `name` values match the Spring Boot model fields exactly so
-// payloads round-trip through the JSON serializer without a translation layer.
-const RESOURCE_CONFIG = {
-  squad: {
-    singular: 'Player',
-    fetchAll: fetchAllPlayersForAdmin,
-    createItem: createPlayer,
-    updateItem: updatePlayer,
-    deleteItem: deletePlayer,
-    emptyItem: () => ({
-      playerFirstName: '',
-      playerSurename: '',
-      playerNumber: '',
-      position: 'Defender',
-      captain: false,
-      goals: 0,
-      assists: 0,
-      appearances: 0,
-      playerProfileImage: '',
-      playerInfoCard: '',
-      bio: '',
-      sponsorLogo1: '',
-      sponsorLogo2: '',
-      sponsorLogo3: '',
-    }),
-    fields: [
-      { name: 'playerFirstName', label: 'First name', type: 'text', required: true },
-      { name: 'playerSurename', label: 'Surname', type: 'text', required: true },
-      { name: 'playerNumber', label: 'Squad number', type: 'number', min: 1 },
-      { name: 'position', label: 'Position', type: 'select', options: POSITIONS, required: true },
-      { name: 'captain', label: 'Captain', type: 'checkbox' },
-      { name: 'goals', label: 'Goals', type: 'number', min: 0 },
-      { name: 'assists', label: 'Assists', type: 'number', min: 0 },
-      { name: 'appearances', label: 'Appearances', type: 'number', min: 0 },
-      { name: 'playerProfileImage', label: 'Profile image URL', type: 'text' },
-      { name: 'playerInfoCard', label: 'Info-card image URL', type: 'text' },
-      { name: 'sponsorLogo1', label: 'Sponsor logo 1 URL', type: 'text' },
-      { name: 'sponsorLogo2', label: 'Sponsor logo 2 URL', type: 'text' },
-      { name: 'sponsorLogo3', label: 'Sponsor logo 3 URL', type: 'text' },
-      { name: 'bio', label: 'Bio', type: 'textarea', rows: 4 },
-    ],
-    summary: (item) => `${item.playerFirstName || ''} ${item.playerSurename || ''}`.trim() + (item.playerNumber ? ` · #${item.playerNumber}` : ''),
-    detail: (item) => `${item.position}${item.captain ? ' · Captain' : ''} · ${item.appearances || 0} apps · ${item.goals || 0} goals`,
-    badge: (item) => item.position,
-  },
-  news: {
-    singular: 'Article',
-    fetchAll: fetchAllArticlesForAdmin,
-    createItem: createArticle,
-    updateItem: updateArticle,
-    deleteItem: deleteArticle,
-    emptyItem: () => ({
-      title: '',
-      slug: '',
-      author: '',
-      tags: [],
-      imageUrl: '',
-      published: false,
-      summary: '',
-      content: '',
-    }),
-    fields: [
-      { name: 'title', label: 'Headline', type: 'text', required: true },
-      { name: 'slug', label: 'URL slug', type: 'text' },
-      { name: 'author', label: 'Author', type: 'text' },
-      { name: 'tags', label: 'Tags (comma-separated)', type: 'tags' },
-      { name: 'imageUrl', label: 'Cover image URL', type: 'text' },
-      { name: 'published', label: 'Publish now', type: 'checkbox' },
-      { name: 'summary', label: 'Summary', type: 'textarea', rows: 3 },
-      { name: 'content', label: 'Content', type: 'textarea', rows: 10, required: true },
-    ],
-    summary: (item) => item.title,
-    detail: (item) => {
-      const firstTag = Array.isArray(item.tags) && item.tags.length ? item.tags[0] : 'Untagged';
-      const when = item.publishedAt ? formatDateLabel(item.publishedAt) : 'Draft';
-      return `${firstTag} · ${when} · ${item.author || 'Unknown'}`;
-    },
-    badge: (item) => (item.published ? 'Published' : 'Draft'),
-  },
-  history: {
-    singular: 'History entry',
-    fetchAll: fetchHistory,
-    createItem: createHistoryEntry,
-    updateItem: updateHistoryEntry,
-    deleteItem: deleteHistoryEntry,
-    emptyItem: () => ({
-      type: 'TIMELINE',
-      year: '',
-      title: '',
-      description: '',
-      imageUrl: '',
-      order: 0,
-    }),
-    fields: [
-      { name: 'type', label: 'Type', type: 'select', options: HISTORY_TYPES, required: true },
-      { name: 'year', label: 'Year', type: 'number', required: true },
-      { name: 'title', label: 'Title', type: 'text', required: true },
-      { name: 'order', label: 'Display order', type: 'number', min: 0 },
-      { name: 'imageUrl', label: 'Image URL', type: 'text' },
-      { name: 'description', label: 'Description', type: 'textarea', rows: 4 },
-    ],
-    summary: (item) => item.title,
-    detail: (item) => `${item.year} · order ${item.order}`,
-    badge: (item) => item.type,
-  },
-};
-
-function formatDateLabel(value) {
-  if (!value) return 'No date';
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return value;
-  return parsed.toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
 function formatDateTimeLabel(value) {
   if (!value) return '—';
   const parsed = new Date(value);
@@ -180,101 +52,6 @@ function formatDateTimeLabel(value) {
   return parsed.toLocaleString('en-GB', {
     day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
-}
-
-function createFormState(fields, source) {
-  return fields.reduce((accumulator, field) => {
-    const rawValue = source?.[field.name];
-
-    if (field.type === 'checkbox') {
-      accumulator[field.name] = Boolean(rawValue);
-    } else if (field.type === 'tags') {
-      accumulator[field.name] = Array.isArray(rawValue)
-        ? rawValue.join(', ')
-        : (rawValue || '');
-    } else if (rawValue === undefined || rawValue === null) {
-      accumulator[field.name] = '';
-    } else {
-      accumulator[field.name] = String(rawValue);
-    }
-
-    return accumulator;
-  }, {});
-}
-
-function preparePayload(fields, formState) {
-  return fields.reduce((accumulator, field) => {
-    const value = formState[field.name];
-
-    if (field.type === 'checkbox') {
-      accumulator[field.name] = Boolean(value);
-    } else if (field.type === 'number') {
-      accumulator[field.name] = value === '' || value === null || value === undefined
-        ? (field.required ? 0 : null)
-        : Number(value);
-    } else if (field.type === 'tags') {
-      accumulator[field.name] = typeof value === 'string'
-        ? value.split(',').map((tag) => tag.trim()).filter(Boolean)
-        : (Array.isArray(value) ? value : []);
-    } else {
-      accumulator[field.name] = value;
-    }
-
-    return accumulator;
-  }, {});
-}
-
-function renderField(field, value, onChange) {
-  if (field.type === 'select') {
-    return (
-      <select value={value} onChange={onChange} required={field.required}>
-        {field.options.map((option) => (
-          <option key={option} value={option}>{option}</option>
-        ))}
-      </select>
-    );
-  }
-
-  if (field.type === 'textarea') {
-    return (
-      <textarea
-        value={value}
-        onChange={onChange}
-        rows={field.rows || 4}
-        required={field.required}
-      />
-    );
-  }
-
-  if (field.type === 'checkbox') {
-    return (
-      <label className={styles.checkboxField}>
-        <input type="checkbox" checked={Boolean(value)} onChange={onChange} />
-        <span>{field.label}</span>
-      </label>
-    );
-  }
-
-  if (field.type === 'tags') {
-    return (
-      <input
-        type="text"
-        value={value}
-        onChange={onChange}
-        placeholder="tag-one, tag-two"
-      />
-    );
-  }
-
-  return (
-    <input
-      type={field.type}
-      value={value}
-      onChange={onChange}
-      required={field.required}
-      min={field.min}
-    />
-  );
 }
 
 function SyncPanel() {
@@ -416,6 +193,362 @@ function SyncPanel() {
   );
 }
 
+function SquadPanel() {
+  const [players, setPlayers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const result = await fetchAllPlayersForAdmin();
+      setPlayers(Array.isArray(result) ? result : []);
+    } catch (err) {
+      setError(err.message || 'Unable to load squad.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  function openAdd() {
+    setEditingItem(null);
+    setMessage('');
+    setModalOpen(true);
+  }
+
+  function openEdit(item) {
+    setEditingItem(item);
+    setMessage('');
+    setModalOpen(true);
+  }
+
+  async function handleDelete(item) {
+    const name = `${item.playerFirstName || ''} ${item.playerSurename || ''}`.trim() || 'this player';
+    if (!window.confirm(`Delete ${name}?`)) return;
+
+    setError('');
+    setMessage('');
+    try {
+      await deletePlayer(item.id);
+      setMessage('Player deleted.');
+      await load();
+    } catch (err) {
+      setError(err.message || 'Delete failed.');
+    }
+  }
+
+  function handleSaved() {
+    setMessage(editingItem ? 'Player updated.' : 'Player added.');
+    load();
+  }
+
+  return (
+    <section className={styles.listPanel} style={{ gridColumn: '1 / -1' }}>
+      <div className={styles.panelHeader}>
+        <h2>Squad</h2>
+        <p>Manage player profiles for the first team.</p>
+      </div>
+
+      {(error || message) ? (
+        <div className={error ? styles.errorBanner : styles.successBanner}>
+          {error || message}
+        </div>
+      ) : null}
+
+      <div className={styles.headerActions} style={{ marginBottom: 20 }}>
+        <button type="button" className={styles.primaryButton} onClick={openAdd}>
+          + Add player
+        </button>
+        <button type="button" className={styles.ghostButton} onClick={load} disabled={loading}>
+          Refresh
+        </button>
+      </div>
+
+      <div className={styles.recordList}>
+        {players.length === 0 ? (
+          <div className={styles.emptyState}>No players yet.</div>
+        ) : (
+          players.map((item) => (
+            <article key={item.id} className={styles.recordCard}>
+              <div className={styles.recordTop}>
+                <div>
+                  <h3 className={styles.recordTitle}>
+                    {`${item.playerFirstName || ''} ${item.playerSurename || ''}`.trim() || 'Unnamed player'}
+                    {item.playerNumber ? ` · #${item.playerNumber}` : ''}
+                  </h3>
+                  <p className={styles.recordMeta}>
+                    {item.position}{item.captain ? ' · Captain' : ''} · {item.appearances || 0} apps · {item.goals || 0} goals
+                  </p>
+                </div>
+                <span className={styles.recordBadge}>{item.position}</span>
+              </div>
+
+              <div className={styles.cardActions}>
+                <button type="button" className={styles.secondaryButton} onClick={() => openEdit(item)}>
+                  Edit
+                </button>
+                <button type="button" className={styles.dangerButton} onClick={() => handleDelete(item)}>
+                  Delete
+                </button>
+              </div>
+            </article>
+          ))
+        )}
+      </div>
+
+      <PlayerFormModal
+        open={modalOpen}
+        item={editingItem}
+        onClose={() => setModalOpen(false)}
+        onSaved={handleSaved}
+      />
+    </section>
+  );
+}
+
+function NewsPanel() {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const result = await fetchAllArticlesForAdmin();
+      setArticles(Array.isArray(result) ? result : []);
+    } catch (err) {
+      setError(err.message || 'Unable to load news.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  function openAdd() {
+    setEditingItem(null);
+    setMessage('');
+    setModalOpen(true);
+  }
+
+  function openEdit(item) {
+    setEditingItem(item);
+    setMessage('');
+    setModalOpen(true);
+  }
+
+  async function handleDelete(item) {
+    if (!window.confirm(`Delete "${item.title}"?`)) return;
+
+    setError('');
+    setMessage('');
+    try {
+      await deleteArticle(item.id);
+      setMessage('Article deleted.');
+      await load();
+    } catch (err) {
+      setError(err.message || 'Delete failed.');
+    }
+  }
+
+  function handleSaved() {
+    setMessage(editingItem ? 'Article updated.' : 'Article added.');
+    load();
+  }
+
+  return (
+    <section className={styles.listPanel} style={{ gridColumn: '1 / -1' }}>
+      <div className={styles.panelHeader}>
+        <h2>News</h2>
+        <p>Publish club updates and match reports.</p>
+      </div>
+
+      {(error || message) ? (
+        <div className={error ? styles.errorBanner : styles.successBanner}>
+          {error || message}
+        </div>
+      ) : null}
+
+      <div className={styles.headerActions} style={{ marginBottom: 20 }}>
+        <button type="button" className={styles.primaryButton} onClick={openAdd}>
+          + Add article
+        </button>
+        <button type="button" className={styles.ghostButton} onClick={load} disabled={loading}>
+          Refresh
+        </button>
+      </div>
+
+      <div className={styles.recordList}>
+        {articles.length === 0 ? (
+          <div className={styles.emptyState}>No articles yet.</div>
+        ) : (
+          articles.map((item) => {
+            const firstTag = Array.isArray(item.tags) && item.tags.length ? item.tags[0] : 'Untagged';
+            const when = item.publishedAt ? formatDateTimeLabel(item.publishedAt) : 'Draft';
+
+            return (
+              <article key={item.id} className={styles.recordCard}>
+                <div className={styles.recordTop}>
+                  <div>
+                    <h3 className={styles.recordTitle}>{item.title}</h3>
+                    <p className={styles.recordMeta}>{firstTag} · {when} · {item.author || 'Unknown'}</p>
+                  </div>
+                  <span className={styles.recordBadge}>{item.published ? 'Published' : 'Draft'}</span>
+                </div>
+
+                <div className={styles.cardActions}>
+                  <button type="button" className={styles.secondaryButton} onClick={() => openEdit(item)}>
+                    Edit
+                  </button>
+                  <button type="button" className={styles.dangerButton} onClick={() => handleDelete(item)}>
+                    Delete
+                  </button>
+                </div>
+              </article>
+            );
+          })
+        )}
+      </div>
+
+      <ArticleFormModal
+        open={modalOpen}
+        item={editingItem}
+        onClose={() => setModalOpen(false)}
+        onSaved={handleSaved}
+      />
+    </section>
+  );
+}
+
+function HistoryPanel() {
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const result = await fetchHistory();
+      setEntries(Array.isArray(result) ? result : []);
+    } catch (err) {
+      setError(err.message || 'Unable to load history.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  function openAdd() {
+    setEditingItem(null);
+    setMessage('');
+    setModalOpen(true);
+  }
+
+  function openEdit(item) {
+    setEditingItem(item);
+    setMessage('');
+    setModalOpen(true);
+  }
+
+  async function handleDelete(item) {
+    if (!window.confirm(`Delete "${item.title}"?`)) return;
+
+    setError('');
+    setMessage('');
+    try {
+      await deleteHistoryEntry(item.id);
+      setMessage('History entry deleted.');
+      await load();
+    } catch (err) {
+      setError(err.message || 'Delete failed.');
+    }
+  }
+
+  function handleSaved() {
+    setMessage(editingItem ? 'History entry updated.' : 'History entry added.');
+    load();
+  }
+
+  return (
+    <section className={styles.listPanel} style={{ gridColumn: '1 / -1' }}>
+      <div className={styles.panelHeader}>
+        <h2>History</h2>
+        <p>Manage the club timeline and honours shown on the History page.</p>
+      </div>
+
+      {(error || message) ? (
+        <div className={error ? styles.errorBanner : styles.successBanner}>
+          {error || message}
+        </div>
+      ) : null}
+
+      <div className={styles.headerActions} style={{ marginBottom: 20 }}>
+        <button type="button" className={styles.primaryButton} onClick={openAdd}>
+          + Add entry
+        </button>
+        <button type="button" className={styles.ghostButton} onClick={load} disabled={loading}>
+          Refresh
+        </button>
+      </div>
+
+      <div className={styles.recordList}>
+        {entries.length === 0 ? (
+          <div className={styles.emptyState}>No history entries yet.</div>
+        ) : (
+          entries.map((item) => (
+            <article key={item.id} className={styles.recordCard}>
+              <div className={styles.recordTop}>
+                <div>
+                  <h3 className={styles.recordTitle}>{item.title}</h3>
+                  <p className={styles.recordMeta}>{item.year} · order {item.order}</p>
+                </div>
+                <span className={styles.recordBadge}>{item.type}</span>
+              </div>
+
+              <div className={styles.cardActions}>
+                <button type="button" className={styles.secondaryButton} onClick={() => openEdit(item)}>
+                  Edit
+                </button>
+                <button type="button" className={styles.dangerButton} onClick={() => handleDelete(item)}>
+                  Delete
+                </button>
+              </div>
+            </article>
+          ))
+        )}
+      </div>
+
+      <HistoryEntryFormModal
+        open={modalOpen}
+        item={editingItem}
+        onClose={() => setModalOpen(false)}
+        onSaved={handleSaved}
+      />
+    </section>
+  );
+}
+
 const ROLES = ['SUPER_ADMIN', 'EDITOR', 'VIEWER'];
 
 function UsersPanel() {
@@ -542,129 +675,20 @@ function UsersPanel() {
   );
 }
 
+const SECTION_PANELS = {
+  sync: SyncPanel,
+  squad: SquadPanel,
+  news: NewsPanel,
+  history: HistoryPanel,
+  users: UsersPanel,
+};
+
 export default function Admin() {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState(DEFAULT_SECTION);
-  const [itemsBySection, setItemsBySection] = useState({ squad: [], news: [], history: [] });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-  const [editingId, setEditingId] = useState(null);
-  const [formState, setFormState] = useState(() =>
-    createFormState(RESOURCE_CONFIG.squad.fields, RESOURCE_CONFIG.squad.emptyItem())
-  );
 
   const sectionKeys = useMemo(() => Object.keys(SECTION_META), []);
-  const activeConfig = RESOURCE_CONFIG[activeSection];
-  const activeItems = itemsBySection[activeSection] || [];
-
-  const resetForm = useCallback((section) => {
-    const config = RESOURCE_CONFIG[section];
-    if (!config) return;
-    setFormState(createFormState(config.fields, config.emptyItem()));
-  }, []);
-
-  const loadSection = useCallback(async (section) => {
-    const config = RESOURCE_CONFIG[section];
-    if (!config) return;
-
-    setLoading(true);
-    setError('');
-    try {
-      const items = await config.fetchAll();
-      setItemsBySection((previous) => ({
-        ...previous,
-        [section]: Array.isArray(items) ? items : [],
-      }));
-    } catch (err) {
-      setError(err.message || `Unable to load ${SECTION_META[section].label.toLowerCase()}.`);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    setEditingId(null);
-    setMessage('');
-    setError('');
-    if (!CUSTOM_SECTIONS.has(activeSection)) {
-      resetForm(activeSection);
-      loadSection(activeSection);
-    }
-  }, [activeSection, loadSection, resetForm]);
-
-  function handleFieldChange(field, event) {
-    const nextValue = field.type === 'checkbox' ? event.target.checked : event.target.value;
-    setFormState((previous) => ({
-      ...previous,
-      [field.name]: nextValue,
-    }));
-  }
-
-  function handleEdit(item) {
-    setEditingId(item.id);
-    setFormState(createFormState(activeConfig.fields, item));
-    setMessage('');
-    setError('');
-  }
-
-  function handleCancelEdit() {
-    setEditingId(null);
-    setMessage('');
-    setError('');
-    resetForm(activeSection);
-  }
-
-  async function handleDelete(item) {
-    if (!window.confirm(`Delete this ${activeConfig.singular.toLowerCase()}?`)) {
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    setMessage('');
-
-    try {
-      await activeConfig.deleteItem(item.id);
-      await loadSection(activeSection);
-      if (editingId === item.id) {
-        setEditingId(null);
-        resetForm(activeSection);
-      }
-      setMessage(`${activeConfig.singular} deleted.`);
-    } catch (err) {
-      setError(err.message || 'Delete failed.');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleSubmit(event) {
-    event.preventDefault();
-    setLoading(true);
-    setError('');
-    setMessage('');
-
-    try {
-      const payload = preparePayload(activeConfig.fields, formState);
-
-      if (editingId) {
-        await activeConfig.updateItem(editingId, payload);
-        setMessage(`${activeConfig.singular} updated.`);
-      } else {
-        await activeConfig.createItem(payload);
-        setMessage(`${activeConfig.singular} added.`);
-      }
-
-      setEditingId(null);
-      resetForm(activeSection);
-      await loadSection(activeSection);
-    } catch (err) {
-      setError(err.message || 'Save failed.');
-    } finally {
-      setLoading(false);
-    }
-  }
+  const ActivePanel = SECTION_PANELS[activeSection];
 
   function handleLogout() {
     clearAuthToken();
@@ -701,103 +725,9 @@ export default function Admin() {
           ))}
         </nav>
 
-        {CUSTOM_SECTIONS.has(activeSection) ? (
-          <div className={styles.workspace}>
-            {activeSection === 'sync' ? <SyncPanel /> : <UsersPanel />}
-          </div>
-        ) : (
-          <>
-            {(error || message) ? (
-              <div className={error ? styles.errorBanner : styles.successBanner}>
-                {error || message}
-              </div>
-            ) : null}
-
-            <div className={styles.workspace}>
-              <section className={styles.editorPanel}>
-                <div className={styles.panelHeader}>
-                  <h2>{editingId ? 'Edit entry' : 'Add entry'}</h2>
-                  <p>{`Create or update ${SECTION_META[activeSection].label.toLowerCase()} here.`}</p>
-                </div>
-
-                <form className={styles.editorForm} onSubmit={handleSubmit}>
-                  <div className={styles.formGrid}>
-                    {activeConfig.fields.map((field) => {
-                      const className = `${styles.field} ${field.type === 'textarea' ? styles.fieldWide : ''} ${field.type === 'checkbox' ? styles.fieldCheckbox : ''}`;
-
-                      if (field.type === 'checkbox') {
-                        return (
-                          <div key={field.name} className={className}>
-                            {renderField(field, formState[field.name], (event) => handleFieldChange(field, event))}
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <label key={field.name} className={className}>
-                          <span>{field.label}</span>
-                          {renderField(field, formState[field.name], (event) => handleFieldChange(field, event))}
-                        </label>
-                      );
-                    })}
-                  </div>
-
-                  <div className={styles.formActions}>
-                    <button type="submit" className={styles.primaryButton} disabled={loading}>
-                      {loading
-                        ? 'Saving...'
-                        : editingId
-                          ? 'Update entry'
-                          : 'Add entry'}
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.ghostButton}
-                      onClick={handleCancelEdit}
-                      disabled={loading}
-                    >
-                      Clear form
-                    </button>
-                  </div>
-                </form>
-              </section>
-
-              <section className={styles.listPanel}>
-                <div className={styles.panelHeader}>
-                  <h2>{SECTION_META[activeSection].label}</h2>
-                  <p>{loading ? 'Refreshing data...' : `${activeItems.length} records loaded.`}</p>
-                </div>
-
-                <div className={styles.recordList}>
-                  {activeItems.length === 0 ? (
-                    <div className={styles.emptyState}>No records yet.</div>
-                  ) : (
-                    activeItems.map((item) => (
-                      <article key={item.id} className={styles.recordCard}>
-                        <div className={styles.recordTop}>
-                          <div>
-                            <h3 className={styles.recordTitle}>{activeConfig.summary(item)}</h3>
-                            <p className={styles.recordMeta}>{activeConfig.detail(item)}</p>
-                          </div>
-                          <span className={styles.recordBadge}>{activeConfig.badge(item)}</span>
-                        </div>
-
-                        <div className={styles.cardActions}>
-                          <button type="button" className={styles.secondaryButton} onClick={() => handleEdit(item)}>
-                            Edit
-                          </button>
-                          <button type="button" className={styles.dangerButton} onClick={() => handleDelete(item)}>
-                            Delete
-                          </button>
-                        </div>
-                      </article>
-                    ))
-                  )}
-                </div>
-              </section>
-            </div>
-          </>
-        )}
+        <div className={styles.workspace}>
+          <ActivePanel />
+        </div>
       </div>
     </div>
   );

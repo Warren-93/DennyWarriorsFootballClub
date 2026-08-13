@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import styles from './Navbar.module.css';
 import Badge from './Badge';
+import useAdminRole from '../hooks/useAdminRole';
 
 const navLinks = [
   { to: '/', label: 'Home' },
@@ -19,6 +20,8 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const badgeUrl = `${process.env.PUBLIC_URL || ''}/badge.png`;
+  const { loggedIn } = useAdminRole();
+  const adminPath = loggedIn ? '/admin' : '/admin/login';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -61,6 +64,9 @@ export default function Navbar() {
         {/* Right side */}
         <div className={styles.actions}>
           <Badge variant="blue" label="2024/25 Season" />
+          <Link to={adminPath} className={styles.adminLink}>
+            {loggedIn ? 'Admin' : 'Staff login'}
+          </Link>
         </div>
 
         {/* Burger */}
@@ -90,6 +96,9 @@ export default function Navbar() {
               {link.label}
             </NavLink>
           ))}
+          <NavLink to={adminPath} className={styles.mobileLink}>
+            {loggedIn ? 'Admin' : 'Staff login'}
+          </NavLink>
         </div>
       )}
     </header>

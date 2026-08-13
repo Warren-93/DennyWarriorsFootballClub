@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useNews } from '../hooks';
+import useAdminRole from '../hooks/useAdminRole';
 import ApiState from '../components/ApiState';
+import ArticleFormModal from '../components/admin/ArticleFormModal';
+import { deleteArticle } from '../api/news';
 import sharedStyles from './PageShared.module.css';
 import styles from './News.module.css';
+import adminStyles from '../components/admin/InlineAdminControls.module.css';
 
 const categories = ['All', 'Match Report', 'Club News', 'Announcement'];
 
@@ -15,6 +19,9 @@ function formatDate(dateStr) {
 
 export default function News() {
   const [filter, setFilter] = useState('All');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingArticle, setEditingArticle] = useState(null);
+  const { canEdit } = useAdminRole();
 
   // Fetch all articles; filter client-side for instant tab switching
   const { data: articles, loading, error, refetch } = useNews();
@@ -24,6 +31,22 @@ export default function News() {
     : filter === 'All'
       ? articles
       : articles.filter(n => n.category === filter);
+
+  function openAdd() {
+    setEditingArticle(null);
+    setModalOpen(true);
+  }
+
+  function openEdit(item) {
+    setEditingArticle(item);
+    setModalOpen(true);
+  }
+
+  async function handleDelete(item) {
+    if (!window.confirm(`Delete "${item.title}"?`)) return;
+    await deleteArticle(item.id);
+    refetch();
+  }
 
   return (
     <div className={sharedStyles.page}>
@@ -47,6 +70,14 @@ export default function News() {
           ))}
         </div>
 
+        {canEdit && (
+          <div className={adminStyles.addBar}>
+            <button type="button" className={adminStyles.addButton} onClick={openAdd}>
+              + Add article
+            </button>
+          </div>
+        )}
+
         <ApiState
           loading={loading}
           error={error}
@@ -57,6 +88,27 @@ export default function News() {
           <div className={styles.grid}>
             {filtered.map(item => (
               <article key={item.id} className={styles.card}>
+                {canEdit && (
+                  <div className={adminStyles.cardControls}>
+                    <button
+                      type="button"
+                      className={adminStyles.iconButton}
+                      onClick={() => openEdit(item)}
+                      aria-label="Edit article"
+                    >
+                      ✎
+                    </button>
+                    <button
+                      type="button"
+                      className={`${adminStyles.iconButton} ${adminStyles.iconButtonDanger}`}
+                      onClick={() => handleDelete(item)}
+                      aria-label="Delete article"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+
                 <div className={styles.cardMeta}>
                   <span className="badge badge-blue">{item.category}</span>
                   <time className={styles.date}>{formatDate(item.date)}</time>
@@ -72,6 +124,13 @@ export default function News() {
           </div>
         </ApiState>
       </div>
+
+      <ArticleFormModal
+        open={modalOpen}
+        item={editingArticle}
+        onClose={() => setModalOpen(false)}
+        onSaved={refetch}
+      />
     </div>
   );
 }

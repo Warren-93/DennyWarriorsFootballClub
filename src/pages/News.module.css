@@ -38,6 +38,7 @@
 }
 
 .card {
+  position: relative;
   background: var(--white);
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-lg);
