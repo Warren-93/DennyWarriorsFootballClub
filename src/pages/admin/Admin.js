@@ -12,6 +12,8 @@ import {
   fetchLeagueTable,
   fetchSyncLogs,
   triggerSync,
+  fetchSyncSettings,
+  updateSyncSettings,
   fetchUsers,
   createUser,
 } from '../../api';
@@ -58,8 +60,11 @@ function SyncPanel() {
   const [logs, setLogs] = useState([]);
   const [fixtures, setFixtures] = useState([]);
   const [table, setTable] = useState([]);
+  const [intervalMinutes, setIntervalMinutes] = useState(null);
+  const [intervalInput, setIntervalInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [triggering, setTriggering] = useState(false);
+  const [savingInterval, setSavingInterval] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
@@ -67,14 +72,17 @@ function SyncPanel() {
     setLoading(true);
     setError('');
     try {
-      const [logsResult, fixturesResult, tableResult] = await Promise.all([
+      const [logsResult, fixturesResult, tableResult, settingsResult] = await Promise.all([
         fetchSyncLogs(),
         fetchFixtures({ limit: 10 }),
         fetchLeagueTable(),
+        fetchSyncSettings(),
       ]);
       setLogs(Array.isArray(logsResult) ? logsResult : []);
       setFixtures(Array.isArray(fixturesResult) ? fixturesResult : []);
       setTable(Array.isArray(tableResult) ? tableResult : []);
+      setIntervalMinutes(settingsResult?.intervalMinutes ?? null);
+      setIntervalInput(String(settingsResult?.intervalMinutes ?? ''));
     } catch (err) {
       setError(err.message || 'Unable to load sync data.');
     } finally {
@@ -98,6 +106,22 @@ function SyncPanel() {
       setError(err.message || 'Sync failed to trigger.');
     } finally {
       setTriggering(false);
+    }
+  }
+
+  async function handleSaveInterval(event) {
+    event.preventDefault();
+    setSavingInterval(true);
+    setError('');
+    setMessage('');
+    try {
+      const result = await updateSyncSettings(Number(intervalInput));
+      setIntervalMinutes(result?.intervalMinutes ?? null);
+      setMessage(`Auto-sync interval set to every ${result?.intervalMinutes} minute(s).`);
+    } catch (err) {
+      setError(err.message || 'Unable to update sync interval.');
+    } finally {
+      setSavingInterval(false);
     }
   }
 
@@ -127,6 +151,28 @@ function SyncPanel() {
           Refresh
         </button>
       </div>
+
+      <h3 className={styles.recordTitle}>Auto-sync frequency</h3>
+      <p className={styles.recordMeta} style={{ marginBottom: 14 }}>
+        {intervalMinutes != null
+          ? `Currently syncing automatically every ${intervalMinutes} minute(s).`
+          : 'Loading current interval...'}
+      </p>
+      <form onSubmit={handleSaveInterval} style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 28 }}>
+        <label className={styles.field} style={{ maxWidth: 160 }}>
+          <span>Interval (minutes)</span>
+          <input
+            type="number"
+            min="1"
+            value={intervalInput}
+            onChange={(event) => setIntervalInput(event.target.value)}
+            required
+          />
+        </label>
+        <button type="submit" className={styles.secondaryButton} disabled={savingInterval || loading}>
+          {savingInterval ? 'Saving…' : 'Save interval'}
+        </button>
+      </form>
 
       <h3 className={styles.recordTitle}>Recent sync runs</h3>
       <div className={styles.recordList}>
