@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   clearAuthToken,
   fetchAllPlayersForAdmin,
@@ -706,6 +706,9 @@ export default function Admin() {
           </div>
 
           <div className={styles.headerActions}>
+            <Link to="/" className={styles.ghostButton}>
+              View site
+            </Link>
             <button type="button" className={styles.ghostButton} onClick={handleLogout}>
               Log out
             </button>

@@ -254,6 +254,9 @@
 .secondaryButton,
 .ghostButton,
 .dangerButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 48px;
   padding: 0 18px;
   border-radius: 8px;
