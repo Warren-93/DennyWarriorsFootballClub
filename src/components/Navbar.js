@@ -63,7 +63,7 @@ export default function Navbar() {
 
         {/* Right side */}
         <div className={styles.actions}>
-          <Badge variant="blue" label="2024/25 Season" />
+          <Badge variant="blue" label="2026/27 Season" />
           <Link to={adminPath} className={styles.adminLink}>
             {loggedIn ? 'Admin' : 'Staff login'}
           </Link>
