@@ -67,7 +67,7 @@ export default function Squad() {
       <div className={sharedStyles.pageHero}>
         <div className="container">
           <h1 className={sharedStyles.pageTitle}>Squad</h1>
-          <p className={sharedStyles.pageSubtitle}>2024/25 First Team</p>
+          <p className={sharedStyles.pageSubtitle}>2026/27 First Team</p>
         </div>
       </div>
 
