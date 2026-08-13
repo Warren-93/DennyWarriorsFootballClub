@@ -141,6 +141,24 @@
   flex: 1;
   position: relative;
   min-height: 240px;
+  background: #1c2126;
+  overflow: hidden;
+}
+
+/* Faint club crest watermark — sits behind the photo/placeholder (which are
+   real children, so they stack above this ::before automatically) and only
+   really shows once no photo covers it, i.e. right now, before player
+   photos are uploaded. */
+.photoColumn::before {
+  content: '';
+  position: absolute;
+  inset: -25%;
+  background-image: url('/badge.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 150%;
+  opacity: 0.14;
+  filter: grayscale(1) brightness(1.8);
 }
 
 .photo {
