@@ -16,7 +16,9 @@ import {
   updateSyncSettings,
   fetchUsers,
   createUser,
+  deleteUser,
 } from '../../api';
+import useAdminRole from '../../hooks/useAdminRole';
 import PlayerFormModal from '../../components/admin/PlayerFormModal';
 import ArticleFormModal from '../../components/admin/ArticleFormModal';
 import HistoryEntryFormModal from '../../components/admin/HistoryEntryFormModal';
@@ -598,9 +600,12 @@ function HistoryPanel() {
 const ROLES = ['SUPER_ADMIN', 'EDITOR', 'VIEWER'];
 
 function UsersPanel() {
+  const { role } = useAdminRole();
+  const isSuperAdmin = role === 'SUPER_ADMIN';
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [form, setForm] = useState({ username: '', password: '', role: 'VIEWER' });
@@ -639,12 +644,29 @@ function UsersPanel() {
     }
   }
 
+  async function handleDelete(user) {
+    if (!window.confirm(`Delete user "${user.username}"? This can't be undone.`)) return;
+
+    setDeletingId(user.id);
+    setError('');
+    setMessage('');
+    try {
+      await deleteUser(user.id);
+      setMessage(`User "${user.username}" deleted.`);
+      await load();
+    } catch (err) {
+      setError(err.message || 'Unable to delete user.');
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   return (
     <>
       <section className={styles.editorPanel}>
         <div className={styles.panelHeader}>
           <h2>Add user</h2>
-          <p>Only super-admins can see this tab or create new accounts.</p>
+          <p>Only super-admins can see this tab, create accounts, or delete them.</p>
         </div>
 
         <form className={styles.editorForm} onSubmit={handleCreate}>
@@ -712,6 +734,19 @@ function UsersPanel() {
                   </div>
                   <span className={styles.recordBadge}>{user.role}</span>
                 </div>
+
+                {isSuperAdmin && (
+                  <div className={styles.cardActions}>
+                    <button
+                      type="button"
+                      className={styles.dangerButton}
+                      onClick={() => handleDelete(user)}
+                      disabled={deletingId === user.id}
+                    >
+                      {deletingId === user.id ? 'Deleting…' : 'Delete'}
+                    </button>
+                  </div>
+                )}
               </article>
             ))
           )}
