@@ -32,18 +32,6 @@ const API_BASE_URL =
   getDefaultApiBaseUrl();
 
 export const AUTH_TOKEN_KEY = 'dwfc_token';
-export const LOCAL_ADMIN_USERNAME_KEY = 'dwfc_admin_username';
-export const LOCAL_ADMIN_PASSWORD_KEY = 'dwfc_admin_password';
-
-const LOCAL_ADMIN_DEFAULTS = {
-  username: process.env.REACT_APP_LOCAL_ADMIN_USERNAME || 'admin',
-  password: process.env.REACT_APP_LOCAL_ADMIN_PASSWORD || 'warriors123',
-};
-
-export function isLocalAdminAuthEnabled() {
-  return process.env.NODE_ENV !== 'production';
-}
-
 export function getAuthToken() {
   if (typeof window === 'undefined') return '';
   return window.localStorage.getItem(AUTH_TOKEN_KEY) || '';
@@ -57,43 +45,6 @@ export function setAuthToken(token) {
 export function clearAuthToken() {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(AUTH_TOKEN_KEY);
-}
-
-export function ensureLocalAdminCredentials() {
-  if (typeof window === 'undefined' || !isLocalAdminAuthEnabled()) {
-    return null;
-  }
-
-  const storedUsername = window.localStorage.getItem(LOCAL_ADMIN_USERNAME_KEY);
-  const storedPassword = window.localStorage.getItem(LOCAL_ADMIN_PASSWORD_KEY);
-
-  if (!storedUsername) {
-    window.localStorage.setItem(LOCAL_ADMIN_USERNAME_KEY, LOCAL_ADMIN_DEFAULTS.username);
-  }
-
-  if (!storedPassword) {
-    window.localStorage.setItem(LOCAL_ADMIN_PASSWORD_KEY, LOCAL_ADMIN_DEFAULTS.password);
-  }
-
-  return {
-    username: window.localStorage.getItem(LOCAL_ADMIN_USERNAME_KEY) || LOCAL_ADMIN_DEFAULTS.username,
-    password: window.localStorage.getItem(LOCAL_ADMIN_PASSWORD_KEY) || LOCAL_ADMIN_DEFAULTS.password,
-  };
-}
-
-export function loginWithLocalAdmin(username, password) {
-  const credentials = ensureLocalAdminCredentials();
-
-  if (!credentials) {
-    return false;
-  }
-
-  if (username === credentials.username && password === credentials.password) {
-    setAuthToken('dwfc-local-dev-token');
-    return true;
-  }
-
-  return false;
 }
 
 export function buildApiUrl(path) {

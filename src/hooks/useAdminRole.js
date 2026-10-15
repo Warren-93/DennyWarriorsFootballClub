@@ -9,7 +9,6 @@ function base64UrlDecode(segment) {
 
 function decodeRole(token) {
   if (!token) return null;
-  if (token === 'dwfc-local-dev-token') return 'SUPER_ADMIN';
 
   try {
     const payloadSegment = token.split('.')[1];

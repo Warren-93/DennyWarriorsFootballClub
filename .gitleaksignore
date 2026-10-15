@@ -1,0 +1,4 @@
+# Findings in old commits that are already public. They can't be removed
+# without rewriting history, so the scan skips them. The password this
+# points to was the old local dev default and must not be in use anywhere.
+c86607642fe64285f3530b5964c08fc526ea6f65:src/api/client.js:hardcoded-password-literal:40
