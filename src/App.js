@@ -6,6 +6,7 @@ import {
   Navigate,
   useLocation,
 } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Analytics } from '@vercel/analytics/react';
 
 import Navbar from './components/Navbar';
@@ -70,6 +71,7 @@ function App() {
   return (
     <BrowserRouter>
       <AppLayout />
+      <SpeedInsights />
       <Analytics />
     </BrowserRouter>
   );
