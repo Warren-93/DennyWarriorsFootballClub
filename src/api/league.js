@@ -1,9 +1,7 @@
-import { request } from './client';
+import { request, unwrapList } from './client';
 
-export function fetchLeagueTable() {
-  return request('/league/table');
-}
-
-export function updateLeagueTable(rows) {
-  return request('/league/table', { method: 'PUT', body: JSON.stringify({ rows }) });
+// The league table is now synced automatically from Comet (no more manual
+// admin editing) — this is the same data source AdminSync shows/triggers.
+export async function fetchLeagueTable() {
+  return unwrapList(await request('/standings'));
 }

@@ -1,0 +1,45 @@
+# Secret-scanning rules for this repository, used by the "Secret scan"
+# GitHub Action (.github/workflows/secret-scan.yml).
+#
+# The built-in gitleaks rules miss the kinds of secrets this project has
+# leaked before (a MongoDB password inside a connection string, Comet API
+# keys inside a URL, a password set as a property default), so these
+# extra rules cover them.
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "connection-string-with-password"
+description = "URL or connection string with an embedded username and password"
+regex = '''(?i)\b[a-z][a-z0-9+.-]*://[^:/\s"'<>]+:([^@/\s"'<>]{4,})@'''
+secretGroup = 1
+[rules.allowlist]
+regexes = ['''^<[^>]*>$''', '''^\*+$''', '''(?i)^(password|pass|pwd|realpassword|xxx+)$''']
+
+[[rules]]
+id = "url-api-key-parameter"
+description = "API key passed as a URL query parameter"
+regex = '''(?i)[?&](?:api[_-]?key|apikey|key|token|access[_-]?token|secret)=([A-Za-z0-9_\-]{16,})'''
+secretGroup = 1
+
+[[rules]]
+id = "spring-property-secret-default"
+description = "Password, secret or key given a literal default in a Spring property"
+regex = '''(?i)(?:password|secret|api[_-]?key|token)[a-z0-9._-]*\s*=\s*\$\{[A-Z0-9_]+:([^}\s$]{4,})\}'''
+secretGroup = 1
+
+[[rules]]
+id = "hardcoded-password-literal"
+description = "Password assigned a string literal in code"
+regex = '''(?i)\bpassword\s*[:=]\s*(?:[^'"\n]*\|\|\s*)?['"]([^'"\s]{6,})['"]'''
+secretGroup = 1
+[rules.allowlist]
+regexes = ['''^(•+|\*+)$''']
+
+[allowlist]
+description = "Test-only dummy values and placeholder examples"
+paths = [
+  '''\.env(\.production)?\.example$''',
+  '''package-lock\.json$''',
+]

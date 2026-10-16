@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
 import { useSquad } from '../hooks';
+import useAdminRole from '../hooks/useAdminRole';
 import ApiState from '../components/ApiState';
+import PlayerFormModal from '../components/admin/PlayerFormModal';
+import { deletePlayer } from '../api/squad';
 import sharedStyles from './PageShared.module.css';
 import styles from './Squad.module.css';
+import adminStyles from '../components/admin/InlineAdminControls.module.css';
 
 const positions = ['All', 'Goalkeeper', 'Defender', 'Midfielder', 'Forward'];
-
-const positionColours = {
-  Goalkeeper: { bg: '#fff3e0', text: '#b35a00' },
-  Defender:   { bg: '#e8eef8', text: '#1e4278' },
-  Midfielder: { bg: '#e6f4eb', text: '#155e29' },
-  Forward:    { bg: '#fde8e8', text: '#922b21' },
-};
 
 function getPlayerName(player) {
   const fullName = player?.name?.trim();
@@ -35,6 +32,9 @@ function getPlayerInitials(name) {
 
 export default function Squad() {
   const [filter, setFilter] = useState('All');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingPlayer, setEditingPlayer] = useState(null);
+  const { canEdit } = useAdminRole();
 
   // Fetch full squad from API; filter client-side for instant tab switching
   const { data: squad, loading, error, refetch } = useSquad();
@@ -45,12 +45,29 @@ export default function Squad() {
       ? squad
       : squad.filter(p => p.position === filter);
 
+  function openAdd() {
+    setEditingPlayer(null);
+    setModalOpen(true);
+  }
+
+  function openEdit(player) {
+    setEditingPlayer(player);
+    setModalOpen(true);
+  }
+
+  async function handleDelete(player) {
+    const name = getPlayerName(player);
+    if (!window.confirm(`Delete ${name}?`)) return;
+    await deletePlayer(player.id);
+    refetch();
+  }
+
   return (
     <div className={sharedStyles.page}>
       <div className={sharedStyles.pageHero}>
         <div className="container">
           <h1 className={sharedStyles.pageTitle}>Squad</h1>
-          <p className={sharedStyles.pageSubtitle}>2024/25 First Team</p>
+          <p className={sharedStyles.pageSubtitle}>2026/27 First Team</p>
         </div>
       </div>
 
@@ -67,6 +84,14 @@ export default function Squad() {
           ))}
         </div>
 
+        {canEdit && (
+          <div className={adminStyles.addBar}>
+            <button type="button" className={adminStyles.addButton} onClick={openAdd}>
+              + Add player
+            </button>
+          </div>
+        )}
+
         <ApiState
           loading={loading}
           error={error}
@@ -76,31 +101,71 @@ export default function Squad() {
         >
           <div className={styles.grid}>
             {filtered.map(player => {
-              const colours = positionColours[player.position] || positionColours.Defender;
               const name = getPlayerName(player);
               const number = player.number ?? player.playerNumber ?? '--';
-              const primaryMeta = player.age ? `Age: ${player.age}` : `${player.appearances ?? 0} apps`;
-              const secondaryMeta = player.nationality || `${player.goals ?? 0} goals`;
+              const apps = player.appearances ?? 0;
+              const goals = player.goals ?? 0;
+              const sponsors = player.sponsorLogos || [];
 
               return (
                 <div key={player.id || `${name}-${number}`} className={styles.card}>
-                  <div className={styles.cardTop}>
-                    <span className={styles.number}>{number}</span>
-                    <div className={styles.avatar}>
-                      {getPlayerInitials(name)}
+                  {canEdit && (
+                    <div className={adminStyles.cardControls}>
+                      <button
+                        type="button"
+                        className={adminStyles.iconButton}
+                        onClick={() => openEdit(player)}
+                        aria-label="Edit player"
+                      >
+                        ✎
+                      </button>
+                      <button
+                        type="button"
+                        className={`${adminStyles.iconButton} ${adminStyles.iconButtonDanger}`}
+                        onClick={() => handleDelete(player)}
+                        aria-label="Delete player"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+
+                  <div className={styles.header}>
+                    <div className={styles.headerRow}>
+                      <h3 className={styles.playerName}>
+                        {name}
+                        {player.captain && <span className={styles.captainTag}>(C)</span>}
+                      </h3>
+                      <span className={styles.playerNumber}>#{number}</span>
                     </div>
                   </div>
-                  <div className={styles.cardBody}>
-                    <h3 className={styles.playerName}>{name}</h3>
-                    <span
-                      className={styles.positionBadge}
-                      style={{ background: colours.bg, color: colours.text }}
-                    >
-                      {player.position}
-                    </span>
-                    <div className={styles.playerMeta}>
-                      <span>{primaryMeta}</span>
-                      <span>{secondaryMeta}</span>
+
+                  <div className={styles.body}>
+                    {sponsors.length > 0 && (
+                      <div className={styles.sponsorColumn}>
+                        <span className={styles.sponsorLabel}>Sponsors</span>
+                        {sponsors.map((url, i) => (
+                          <div key={i} className={styles.sponsorBox}>
+                            <img src={url} alt="Club sponsor" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className={styles.photoColumn}>
+                      {player.profileImage ? (
+                        <img src={player.profileImage} alt={name} className={styles.photo} />
+                      ) : (
+                        <div className={styles.photoPlaceholder}>{getPlayerInitials(name)}</div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className={styles.footer}>
+                    <span className={styles.positionBadge}>{player.position}</span>
+                    <div className={styles.statsRow}>
+                      <span>{apps} apps</span>
+                      <span>{goals} goals</span>
                     </div>
                   </div>
                 </div>
@@ -109,6 +174,13 @@ export default function Squad() {
           </div>
         </ApiState>
       </div>
+
+      <PlayerFormModal
+        open={modalOpen}
+        item={editingPlayer}
+        onClose={() => setModalOpen(false)}
+        onSaved={refetch}
+      />
     </div>
   );
 }

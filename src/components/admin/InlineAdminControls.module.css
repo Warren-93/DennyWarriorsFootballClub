@@ -1,0 +1,88 @@
+.addBar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.addButton {
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #2d5fa6 0%, #1e8a3c 100%);
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(45, 95, 166, 0.25);
+  transition: transform 0.18s ease;
+}
+
+.addButton:hover {
+  transform: translateY(-1px);
+}
+
+.cardControls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+  display: flex;
+  gap: 6px;
+}
+
+.iconButton {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconButton:hover {
+  background: rgba(0, 0, 0, 0.78);
+}
+
+.iconButtonDanger:hover {
+  background: rgba(159, 39, 39, 0.88);
+}
+
+.inlineControls {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.inlineButton {
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(15, 23, 32, 0.14);
+  background: #ffffff;
+  color: #1e4278;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.inlineButton:hover {
+  background: rgba(45, 95, 166, 0.08);
+}
+
+.inlineButtonDanger {
+  color: #9f2727;
+}
+
+.inlineButtonDanger:hover {
+  background: rgba(176, 47, 47, 0.08);
+}

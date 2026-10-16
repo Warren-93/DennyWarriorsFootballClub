@@ -13,7 +13,7 @@ export default function LeagueTable() {
       <div className={sharedStyles.pageHero}>
         <div className="container">
           <h1 className={sharedStyles.pageTitle}>League Table</h1>
-          <p className={sharedStyles.pageSubtitle}>2024/25 Season Standings</p>
+          <p className={sharedStyles.pageSubtitle}>2025/26 Season Standings</p>
         </div>
       </div>
 
