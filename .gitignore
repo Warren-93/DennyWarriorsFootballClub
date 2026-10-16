@@ -4,12 +4,21 @@ build
 .vite
 
 .env
-.env.local
-.env.development.local
-.env.production.local
+.env.*
+!.env.example
+!.env.production.example
+*.env
 
 .DS_Store
 *.log
 
 .vercel
 .idea
+
+# Keys and credential files — never commit these
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+service-account*.json
