@@ -1,41 +1,35 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   clearAuthToken,
-  fetchFixtures,
-  createFixture,
-  updateFixture,
-  deleteFixture,
-  fetchResults,
-  createResult,
-  updateResult,
-  deleteResult,
-  fetchSquad,
-  createPlayer,
-  updatePlayer,
+  fetchAllPlayersForAdmin,
   deletePlayer,
-  fetchNews,
-  createArticle,
-  updateArticle,
+  fetchAllArticlesForAdmin,
   deleteArticle,
+  fetchHistory,
+  deleteHistoryEntry,
+  fetchFixtures,
   fetchLeagueTable,
-  updateLeagueTable,
+  fetchSyncLogs,
+  triggerSync,
+  fetchSyncSettings,
+  updateSyncSettings,
+  fetchUsers,
+  createUser,
+  deleteUser,
 } from '../../api';
+import useAdminRole from '../../hooks/useAdminRole';
+import PlayerFormModal from '../../components/admin/PlayerFormModal';
+import ArticleFormModal from '../../components/admin/ArticleFormModal';
+import HistoryEntryFormModal from '../../components/admin/HistoryEntryFormModal';
 import styles from './Admin.module.css';
 
-const COMPETITIONS = ['League', 'Cup', 'Friendly'];
-const POSITIONS = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward'];
-const FIXTURE_STATUSES = ['scheduled', 'postponed', 'cancelled', 'completed'];
-const DEFAULT_SECTION = 'fixtures';
+const DEFAULT_SECTION = 'sync';
 
 const SECTION_META = {
-  fixtures: {
-    label: 'Fixtures',
-    description: 'Create and update upcoming matches.',
-  },
-  results: {
-    label: 'Results',
-    description: 'Record scores and final outcomes.',
+  sync: {
+    label: 'League Sync',
+    description: 'Fixtures, results, and the league table are synced automatically from the league API. View synced data and trigger a re-sync here.',
   },
   squad: {
     label: 'Squad',
@@ -45,523 +39,737 @@ const SECTION_META = {
     label: 'News',
     description: 'Publish club updates and match reports.',
   },
-  league: {
-    label: 'League Table',
-    description: 'Edit the full standings and publish them in one save.',
+  history: {
+    label: 'History',
+    description: 'Manage the club timeline and honours shown on the History page.',
+  },
+  users: {
+    label: 'Users',
+    description: 'Admin accounts. Only super-admins can create new users.',
   },
 };
 
-// All field `name` values match the Spring Boot model fields exactly so
-// payloads round-trip through the JSON serializer without a translation layer.
-const RESOURCE_CONFIG = {
-  fixtures: {
-    singular: 'Fixture',
-    fetchAll: fetchFixtures,
-    createItem: createFixture,
-    updateItem: updateFixture,
-    deleteItem: deleteFixture,
-    emptyItem: () => ({
-      opponent: '',
-      competition: 'League',
-      season: '',
-      venue: '',
-      fixtureDate: '',
-      kickoffTime: '',
-      home: true,
-      played: false,
-      status: 'scheduled',
-      notes: '',
-      ticketUrl: '',
-    }),
-    fields: [
-      { name: 'opponent', label: 'Opponent', type: 'text', required: true },
-      { name: 'fixtureDate', label: 'Date', type: 'date', required: true },
-      { name: 'kickoffTime', label: 'Kick-off', type: 'time' },
-      { name: 'competition', label: 'Competition', type: 'select', options: COMPETITIONS, required: true },
-      { name: 'season', label: 'Season', type: 'text' },
-      { name: 'venue', label: 'Venue', type: 'text' },
-      { name: 'status', label: 'Status', type: 'select', options: FIXTURE_STATUSES },
-      { name: 'home', label: 'Home fixture', type: 'checkbox' },
-      { name: 'played', label: 'Already played', type: 'checkbox' },
-      { name: 'ticketUrl', label: 'Ticket URL', type: 'text' },
-      { name: 'notes', label: 'Notes', type: 'textarea', rows: 3 },
-    ],
-    summary: (item) => item.opponent,
-    detail: (item) => `${formatDateLabel(item.fixtureDate)} · ${item.kickoffTime || 'TBC'} · ${item.home ? 'Home' : 'Away'}`,
-    badge: (item) => item.competition,
-  },
-  results: {
-    singular: 'Result',
-    fetchAll: fetchResults,
-    createItem: createResult,
-    updateItem: updateResult,
-    deleteItem: deleteResult,
-    emptyItem: () => ({
-      fixtureId: '',
-      opponent: '',
-      competition: 'League',
-      season: '',
-      venue: '',
-      matchDate: '',
-      home: true,
-      dennyWarriorsScore: 0,
-      opponentScore: 0,
-      scorers: [],
-      report: '',
-    }),
-    fields: [
-      { name: 'opponent', label: 'Opponent', type: 'text', required: true },
-      { name: 'matchDate', label: 'Date', type: 'date', required: true },
-      { name: 'competition', label: 'Competition', type: 'select', options: COMPETITIONS, required: true },
-      { name: 'season', label: 'Season', type: 'text' },
-      { name: 'venue', label: 'Venue', type: 'text' },
-      { name: 'home', label: 'Home fixture', type: 'checkbox' },
-      { name: 'dennyWarriorsScore', label: 'Denny Warriors goals', type: 'number', required: true, min: 0 },
-      { name: 'opponentScore', label: 'Opponent goals', type: 'number', required: true, min: 0 },
-      { name: 'scorers', label: 'Scorers (comma-separated)', type: 'tags' },
-      { name: 'fixtureId', label: 'Linked fixture ID (optional)', type: 'text' },
-      { name: 'report', label: 'Match report', type: 'textarea', rows: 5 },
-    ],
-    summary: (item) => `${item.dennyWarriorsScore}–${item.opponentScore} vs ${item.opponent}`,
-    detail: (item) => `${formatDateLabel(item.matchDate)} · ${item.home ? 'Home' : 'Away'}`,
-    badge: (item) => item.competition,
-  },
-  squad: {
-    singular: 'Player',
-    fetchAll: fetchSquad,
-    createItem: createPlayer,
-    updateItem: updatePlayer,
-    deleteItem: deletePlayer,
-    emptyItem: () => ({
-      playerFirstName: '',
-      playerSurename: '',
-      playerNumber: '',
-      position: 'Defender',
-      captain: false,
-      goals: 0,
-      assists: 0,
-      appearances: 0,
-      playerProfile: '',
-      playerInfoCard: '',
-      bio: '',
-    }),
-    fields: [
-      { name: 'playerFirstName', label: 'First name', type: 'text', required: true },
-      { name: 'playerSurename', label: 'Surname', type: 'text', required: true },
-      { name: 'playerNumber', label: 'Squad number', type: 'number', min: 1 },
-      { name: 'position', label: 'Position', type: 'select', options: POSITIONS, required: true },
-      { name: 'captain', label: 'Captain', type: 'checkbox' },
-      { name: 'goals', label: 'Goals', type: 'number', min: 0 },
-      { name: 'assists', label: 'Assists', type: 'number', min: 0 },
-      { name: 'appearances', label: 'Appearances', type: 'number', min: 0 },
-      { name: 'playerProfile', label: 'Profile image URL', type: 'text' },
-      { name: 'playerInfoCard', label: 'Info-card image URL', type: 'text' },
-      { name: 'bio', label: 'Bio', type: 'textarea', rows: 4 },
-    ],
-    summary: (item) => `${item.playerFirstName || ''} ${item.playerSurename || ''}`.trim() + (item.playerNumber ? ` · #${item.playerNumber}` : ''),
-    detail: (item) => `${item.position}${item.captain ? ' · Captain' : ''} · ${item.appearances || 0} apps · ${item.goals || 0} goals`,
-    badge: (item) => item.position,
-  },
-  news: {
-    singular: 'Article',
-    fetchAll: fetchNews,
-    createItem: createArticle,
-    updateItem: updateArticle,
-    deleteItem: deleteArticle,
-    emptyItem: () => ({
-      title: '',
-      slug: '',
-      author: '',
-      tags: [],
-      imageUrl: '',
-      published: false,
-      summary: '',
-      content: '',
-    }),
-    fields: [
-      { name: 'title', label: 'Headline', type: 'text', required: true },
-      { name: 'slug', label: 'URL slug', type: 'text' },
-      { name: 'author', label: 'Author', type: 'text' },
-      { name: 'tags', label: 'Tags (comma-separated)', type: 'tags' },
-      { name: 'imageUrl', label: 'Cover image URL', type: 'text' },
-      { name: 'published', label: 'Publish now', type: 'checkbox' },
-      { name: 'summary', label: 'Summary', type: 'textarea', rows: 3 },
-      { name: 'content', label: 'Content', type: 'textarea', rows: 10, required: true },
-    ],
-    summary: (item) => item.title,
-    detail: (item) => {
-      const firstTag = Array.isArray(item.tags) && item.tags.length ? item.tags[0] : 'Untagged';
-      const when = item.publishedAt ? formatDateLabel(item.publishedAt) : 'Draft';
-      return `${firstTag} · ${when} · ${item.author || 'Unknown'}`;
-    },
-    badge: (item) => (item.published ? 'Published' : 'Draft'),
-  },
-};
-
-const LEAGUE_FIELDS = [
-  { name: 'position', label: 'Pos', type: 'number', required: true, min: 1 },
-  { name: 'team', label: 'Team', type: 'text', required: true },
-  { name: 'played', label: 'Played', type: 'number', required: true, min: 0 },
-  { name: 'won', label: 'Won', type: 'number', required: true, min: 0 },
-  { name: 'drawn', label: 'Drawn', type: 'number', required: true, min: 0 },
-  { name: 'lost', label: 'Lost', type: 'number', required: true, min: 0 },
-  { name: 'goalsFor', label: 'GF', type: 'number', required: true, min: 0 },
-  { name: 'goalsAgainst', label: 'GA', type: 'number', required: true, min: 0 },
-  { name: 'goalDifference', label: 'GD', type: 'number', required: true },
-  { name: 'points', label: 'Points', type: 'number', required: true, min: 0 },
-];
-
-function formatDateValue(value) {
-  if (!value) return '';
+function formatDateTimeLabel(value) {
+  if (!value) return '—';
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
-  return parsed.toISOString().slice(0, 10);
-}
-
-function formatDateLabel(value) {
-  if (!value) return 'No date';
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return value;
-  return parsed.toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
+  return parsed.toLocaleString('en-GB', {
+    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 }
 
-function createFormState(fields, source) {
-  return fields.reduce((accumulator, field) => {
-    const rawValue = source?.[field.name];
-
-    if (field.type === 'checkbox') {
-      accumulator[field.name] = Boolean(rawValue);
-    } else if (field.type === 'date') {
-      accumulator[field.name] = formatDateValue(rawValue);
-    } else if (field.type === 'tags') {
-      accumulator[field.name] = Array.isArray(rawValue)
-        ? rawValue.join(', ')
-        : (rawValue || '');
-    } else if (rawValue === undefined || rawValue === null) {
-      accumulator[field.name] = '';
-    } else {
-      accumulator[field.name] = String(rawValue);
-    }
-
-    return accumulator;
-  }, {});
-}
-
-function createLeagueRow() {
-  return {
-    position: '',
-    team: '',
-    played: '',
-    won: '',
-    drawn: '',
-    lost: '',
-    goalsFor: '',
-    goalsAgainst: '',
-    goalDifference: '',
-    points: '',
-  };
-}
-
-function preparePayload(fields, formState) {
-  return fields.reduce((accumulator, field) => {
-    const value = formState[field.name];
-
-    if (field.type === 'checkbox') {
-      accumulator[field.name] = Boolean(value);
-    } else if (field.type === 'number') {
-      accumulator[field.name] = value === '' || value === null || value === undefined
-        ? (field.required ? 0 : null)
-        : Number(value);
-    } else if (field.type === 'tags') {
-      accumulator[field.name] = typeof value === 'string'
-        ? value.split(',').map((tag) => tag.trim()).filter(Boolean)
-        : (Array.isArray(value) ? value : []);
-    } else {
-      accumulator[field.name] = value;
-    }
-
-    return accumulator;
-  }, {});
-}
-
-function decorateLeagueRows(rows) {
-  return (rows || []).map((row, index) => ({
-    ...row,
-    __rowId: `league-${index}-${row.position}-${row.team}`,
-  }));
-}
-
-function stripLeagueRow(row) {
-  const { __rowId, ...payload } = row;
-  return payload;
-}
-
-function getDeletePrompt(section) {
-  if (section === 'league') {
-    return 'Delete this league row?';
-  }
-
-  return `Delete this ${RESOURCE_CONFIG[section].singular.toLowerCase()}?`;
-}
-
-function renderField(field, value, onChange) {
-  if (field.type === 'select') {
-    return (
-      <select value={value} onChange={onChange} required={field.required}>
-        {field.options.map((option) => (
-          <option key={option} value={option}>{option}</option>
-        ))}
-      </select>
-    );
-  }
-
-  if (field.type === 'textarea') {
-    return (
-      <textarea
-        value={value}
-        onChange={onChange}
-        rows={field.rows || 4}
-        required={field.required}
-      />
-    );
-  }
-
-  if (field.type === 'checkbox') {
-    return (
-      <label className={styles.checkboxField}>
-        <input type="checkbox" checked={Boolean(value)} onChange={onChange} />
-        <span>{field.label}</span>
-      </label>
-    );
-  }
-
-  if (field.type === 'tags') {
-    return (
-      <input
-        type="text"
-        value={value}
-        onChange={onChange}
-        placeholder="tag-one, tag-two"
-      />
-    );
-  }
-
-  return (
-    <input
-      type={field.type}
-      value={value}
-      onChange={onChange}
-      required={field.required}
-      min={field.min}
-    />
-  );
-}
-
-export default function Admin() {
-  const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState(DEFAULT_SECTION);
-  const [itemsBySection, setItemsBySection] = useState({
-    fixtures: [],
-    results: [],
-    squad: [],
-    news: [],
-    league: [],
-  });
+function SyncPanel() {
+  const [logs, setLogs] = useState([]);
+  const [fixtures, setFixtures] = useState([]);
+  const [table, setTable] = useState([]);
+  const [intervalDays, setIntervalDays] = useState(null);
+  const [intervalInput, setIntervalInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [triggering, setTriggering] = useState(false);
+  const [savingInterval, setSavingInterval] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [editingId, setEditingId] = useState(null);
-  const [formState, setFormState] = useState(() =>
-    createFormState(RESOURCE_CONFIG[DEFAULT_SECTION].fields, RESOURCE_CONFIG[DEFAULT_SECTION].emptyItem())
-  );
-  const [leagueDirty, setLeagueDirty] = useState(false);
 
-  const sectionKeys = useMemo(() => Object.keys(SECTION_META), []);
-  const activeConfig = activeSection === 'league' ? null : RESOURCE_CONFIG[activeSection];
-  const activeItems = itemsBySection[activeSection] || [];
-
-  const resetForm = useCallback((section) => {
-    if (section === 'league') {
-      setFormState(createFormState(LEAGUE_FIELDS, createLeagueRow()));
-      return;
-    }
-
-    const config = RESOURCE_CONFIG[section];
-    setFormState(createFormState(config.fields, config.emptyItem()));
-  }, []);
-
-  const loadSection = useCallback(async (section) => {
+  const load = useCallback(async () => {
     setLoading(true);
     setError('');
-
     try {
-      if (section === 'league') {
-        const table = await fetchLeagueTable();
-        // Backend returns the LeagueTable wrapper { id, key, leagueName, season, rows, updatedAt }
-        const rows = Array.isArray(table) ? table : (table?.rows || []);
-        setItemsBySection((previous) => ({
-          ...previous,
-          league: decorateLeagueRows(rows),
-        }));
-        setLeagueDirty(false);
-      } else {
-        const config = RESOURCE_CONFIG[section];
-        const items = await config.fetchAll();
-        setItemsBySection((previous) => ({
-          ...previous,
-          [section]: Array.isArray(items) ? items : [],
-        }));
-      }
+      const [logsResult, fixturesResult, tableResult, settingsResult] = await Promise.all([
+        fetchSyncLogs(),
+        fetchFixtures({ limit: 10 }),
+        fetchLeagueTable(),
+        fetchSyncSettings(),
+      ]);
+      setLogs(Array.isArray(logsResult) ? logsResult : []);
+      setFixtures(Array.isArray(fixturesResult) ? fixturesResult : []);
+      setTable(Array.isArray(tableResult) ? tableResult : []);
+      setIntervalDays(settingsResult?.intervalDays ?? null);
+      setIntervalInput(String(settingsResult?.intervalDays ?? ''));
     } catch (err) {
-      setError(err.message || `Unable to load ${SECTION_META[section].label.toLowerCase()}.`);
+      setError(err.message || 'Unable to load sync data.');
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    setEditingId(null);
-    setMessage('');
+    load();
+  }, [load]);
+
+  async function handleTrigger() {
+    setTriggering(true);
     setError('');
-    resetForm(activeSection);
-    loadSection(activeSection);
-  }, [activeSection, loadSection, resetForm]);
-
-  function handleFieldChange(field, event) {
-    const nextValue = field.type === 'checkbox' ? event.target.checked : event.target.value;
-    setFormState((previous) => ({
-      ...previous,
-      [field.name]: nextValue,
-    }));
-  }
-
-  function handleEdit(item) {
-    if (activeSection === 'league') {
-      setEditingId(item.__rowId);
-      setFormState(createFormState(LEAGUE_FIELDS, item));
-    } else {
-      setEditingId(item.id);
-      setFormState(createFormState(activeConfig.fields, item));
+    setMessage('');
+    try {
+      const result = await triggerSync();
+      setMessage(`Sync ${result?.status?.toLowerCase() || 'complete'} — ${result?.recordsUpserted ?? 0} fixtures upserted.`);
+      await load();
+    } catch (err) {
+      setError(err.message || 'Sync failed to trigger.');
+    } finally {
+      setTriggering(false);
     }
-
-    setMessage('');
-    setError('');
   }
 
-  function handleCancelEdit() {
-    setEditingId(null);
-    setMessage('');
+  async function handleSaveInterval(event) {
+    event.preventDefault();
+    setSavingInterval(true);
     setError('');
-    resetForm(activeSection);
+    setMessage('');
+    try {
+      const result = await updateSyncSettings(Number(intervalInput));
+      setIntervalDays(result?.intervalDays ?? null);
+      setMessage(`Auto-sync interval set to every ${result?.intervalDays} day(s).`);
+    } catch (err) {
+      setError(err.message || 'Unable to update sync interval.');
+    } finally {
+      setSavingInterval(false);
+    }
+  }
+
+  return (
+    <section className={styles.listPanel} style={{ gridColumn: '1 / -1' }}>
+      <div className={styles.panelHeader}>
+        <h2>League Sync</h2>
+        <p>Fixtures, results, and the league table are pulled automatically from the league API on a schedule.</p>
+      </div>
+
+      {(error || message) ? (
+        <div className={error ? styles.errorBanner : styles.successBanner}>
+          {error || message}
+        </div>
+      ) : null}
+
+      <div className={styles.headerActions} style={{ marginBottom: 20 }}>
+        <button
+          type="button"
+          className={styles.primaryButton}
+          onClick={handleTrigger}
+          disabled={triggering || loading}
+        >
+          {triggering ? 'Syncing…' : 'Trigger sync now'}
+        </button>
+        <button type="button" className={styles.ghostButton} onClick={load} disabled={loading}>
+          Refresh
+        </button>
+      </div>
+
+      <h3 className={styles.recordTitle}>Auto-sync frequency</h3>
+      <p className={styles.recordMeta} style={{ marginBottom: 14 }}>
+        {intervalDays != null
+          ? `Currently syncing automatically every ${intervalDays} day(s). Fixtures and the league table only change weekly, so daily (or less often) is usually enough.`
+          : 'Loading current interval...'}
+      </p>
+      <form onSubmit={handleSaveInterval} style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 28 }}>
+        <label className={styles.field} style={{ maxWidth: 160 }}>
+          <span>Interval (days)</span>
+          <input
+            type="number"
+            min="1"
+            value={intervalInput}
+            onChange={(event) => setIntervalInput(event.target.value)}
+            required
+          />
+        </label>
+        <button type="submit" className={styles.secondaryButton} disabled={savingInterval || loading}>
+          {savingInterval ? 'Saving…' : 'Save interval'}
+        </button>
+      </form>
+
+      <h3 className={styles.recordTitle}>Recent sync runs</h3>
+      <div className={styles.recordList}>
+        {logs.length === 0 ? (
+          <div className={styles.emptyState}>No sync runs recorded yet.</div>
+        ) : (
+          logs.slice(0, 10).map((log) => (
+            <article key={log.id} className={styles.recordCard}>
+              <div className={styles.recordTop}>
+                <div>
+                  <h3 className={styles.recordTitle}>{log.status} · {log.trigger}</h3>
+                  <p className={styles.recordMeta}>
+                    {formatDateTimeLabel(log.startedAt)} · {log.recordsProcessed ?? 0} processed, {log.recordsUpserted ?? 0} upserted
+                    {log.errorMessage ? ` · ${log.errorMessage}` : ''}
+                  </p>
+                </div>
+              </div>
+            </article>
+          ))
+        )}
+      </div>
+
+      <h3 className={styles.recordTitle} style={{ marginTop: 28 }}>Latest synced fixtures</h3>
+      <div className={styles.recordList}>
+        {fixtures.length === 0 ? (
+          <div className={styles.emptyState}>No fixtures synced yet.</div>
+        ) : (
+          fixtures.map((f) => (
+            <article key={f.id} className={styles.recordCard}>
+              <div className={styles.recordTop}>
+                <div>
+                  <h3 className={styles.recordTitle}>
+                    {f.homeTeam} vs {f.awayTeam}
+                    {f.homeScore != null && f.awayScore != null ? ` (${f.homeScore}–${f.awayScore})` : ''}
+                  </h3>
+                  <p className={styles.recordMeta}>{formatDateTimeLabel(f.kickoffAt)} · {f.competition} · {f.status}</p>
+                </div>
+              </div>
+            </article>
+          ))
+        )}
+      </div>
+
+      <h3 className={styles.recordTitle} style={{ marginTop: 28 }}>League table</h3>
+      <div className={styles.recordList}>
+        {table.length === 0 ? (
+          <div className={styles.emptyState}>League table not available yet.</div>
+        ) : (
+          table.map((row) => (
+            <article key={row.pos} className={styles.recordCard}>
+              <div className={styles.recordTop}>
+                <div>
+                  <h3 className={styles.recordTitle}>{row.pos}. {row.team}</h3>
+                  <p className={styles.recordMeta}>
+                    P {row.played} · W {row.won} · D {row.drawn} · L {row.lost} · GD {row.gd} · Pts {row.points}
+                  </p>
+                </div>
+              </div>
+            </article>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
+function SquadPanel() {
+  const [players, setPlayers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const result = await fetchAllPlayersForAdmin();
+      setPlayers(Array.isArray(result) ? result : []);
+    } catch (err) {
+      setError(err.message || 'Unable to load squad.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  function openAdd() {
+    setEditingItem(null);
+    setMessage('');
+    setModalOpen(true);
+  }
+
+  function openEdit(item) {
+    setEditingItem(item);
+    setMessage('');
+    setModalOpen(true);
   }
 
   async function handleDelete(item) {
-    if (!window.confirm(getDeletePrompt(activeSection))) {
-      return;
-    }
+    const name = `${item.playerFirstName || ''} ${item.playerSurename || ''}`.trim() || 'this player';
+    if (!window.confirm(`Delete ${name}?`)) return;
 
-    setLoading(true);
     setError('');
     setMessage('');
-
     try {
-      if (activeSection === 'league') {
-        setItemsBySection((previous) => ({
-          ...previous,
-          league: previous.league.filter((row) => row.__rowId !== item.__rowId),
-        }));
-        setLeagueDirty(true);
-        if (editingId === item.__rowId) {
-          setEditingId(null);
-          resetForm('league');
-        }
-        setMessage('League row removed. Save the table to publish changes.');
-      } else {
-        await activeConfig.deleteItem(item.id);
-        await loadSection(activeSection);
-        if (editingId === item.id) {
-          setEditingId(null);
-          resetForm(activeSection);
-        }
-        setMessage(`${activeConfig.singular} deleted.`);
-      }
+      await deletePlayer(item.id);
+      setMessage('Player deleted.');
+      await load();
     } catch (err) {
       setError(err.message || 'Delete failed.');
-    } finally {
-      setLoading(false);
     }
   }
 
-  async function handleSubmit(event) {
+  function handleSaved() {
+    setMessage(editingItem ? 'Player updated.' : 'Player added.');
+    load();
+  }
+
+  return (
+    <section className={styles.listPanel} style={{ gridColumn: '1 / -1' }}>
+      <div className={styles.panelHeader}>
+        <h2>Squad</h2>
+        <p>Manage player profiles for the first team.</p>
+      </div>
+
+      {(error || message) ? (
+        <div className={error ? styles.errorBanner : styles.successBanner}>
+          {error || message}
+        </div>
+      ) : null}
+
+      <div className={styles.headerActions} style={{ marginBottom: 20 }}>
+        <button type="button" className={styles.primaryButton} onClick={openAdd}>
+          + Add player
+        </button>
+        <button type="button" className={styles.ghostButton} onClick={load} disabled={loading}>
+          Refresh
+        </button>
+      </div>
+
+      <div className={styles.recordList}>
+        {players.length === 0 ? (
+          <div className={styles.emptyState}>No players yet.</div>
+        ) : (
+          players.map((item) => (
+            <article key={item.id} className={styles.recordCard}>
+              <div className={styles.recordTop}>
+                <div>
+                  <h3 className={styles.recordTitle}>
+                    {`${item.playerFirstName || ''} ${item.playerSurename || ''}`.trim() || 'Unnamed player'}
+                    {item.playerNumber ? ` · #${item.playerNumber}` : ''}
+                  </h3>
+                  <p className={styles.recordMeta}>
+                    {item.position}{item.captain ? ' · Captain' : ''} · {item.appearances || 0} apps · {item.goals || 0} goals
+                  </p>
+                </div>
+                <span className={styles.recordBadge}>{item.position}</span>
+              </div>
+
+              <div className={styles.cardActions}>
+                <button type="button" className={styles.secondaryButton} onClick={() => openEdit(item)}>
+                  Edit
+                </button>
+                <button type="button" className={styles.dangerButton} onClick={() => handleDelete(item)}>
+                  Delete
+                </button>
+              </div>
+            </article>
+          ))
+        )}
+      </div>
+
+      <PlayerFormModal
+        open={modalOpen}
+        item={editingItem}
+        onClose={() => setModalOpen(false)}
+        onSaved={handleSaved}
+      />
+    </section>
+  );
+}
+
+function NewsPanel() {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const result = await fetchAllArticlesForAdmin();
+      setArticles(Array.isArray(result) ? result : []);
+    } catch (err) {
+      setError(err.message || 'Unable to load news.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  function openAdd() {
+    setEditingItem(null);
+    setMessage('');
+    setModalOpen(true);
+  }
+
+  function openEdit(item) {
+    setEditingItem(item);
+    setMessage('');
+    setModalOpen(true);
+  }
+
+  async function handleDelete(item) {
+    if (!window.confirm(`Delete "${item.title}"?`)) return;
+
+    setError('');
+    setMessage('');
+    try {
+      await deleteArticle(item.id);
+      setMessage('Article deleted.');
+      await load();
+    } catch (err) {
+      setError(err.message || 'Delete failed.');
+    }
+  }
+
+  function handleSaved() {
+    setMessage(editingItem ? 'Article updated.' : 'Article added.');
+    load();
+  }
+
+  return (
+    <section className={styles.listPanel} style={{ gridColumn: '1 / -1' }}>
+      <div className={styles.panelHeader}>
+        <h2>News</h2>
+        <p>Publish club updates and match reports.</p>
+      </div>
+
+      {(error || message) ? (
+        <div className={error ? styles.errorBanner : styles.successBanner}>
+          {error || message}
+        </div>
+      ) : null}
+
+      <div className={styles.headerActions} style={{ marginBottom: 20 }}>
+        <button type="button" className={styles.primaryButton} onClick={openAdd}>
+          + Add article
+        </button>
+        <button type="button" className={styles.ghostButton} onClick={load} disabled={loading}>
+          Refresh
+        </button>
+      </div>
+
+      <div className={styles.recordList}>
+        {articles.length === 0 ? (
+          <div className={styles.emptyState}>No articles yet.</div>
+        ) : (
+          articles.map((item) => {
+            const firstTag = Array.isArray(item.tags) && item.tags.length ? item.tags[0] : 'Untagged';
+            const when = item.publishedAt ? formatDateTimeLabel(item.publishedAt) : 'Draft';
+
+            return (
+              <article key={item.id} className={styles.recordCard}>
+                <div className={styles.recordTop}>
+                  <div>
+                    <h3 className={styles.recordTitle}>{item.title}</h3>
+                    <p className={styles.recordMeta}>{firstTag} · {when} · {item.author || 'Unknown'}</p>
+                  </div>
+                  <span className={styles.recordBadge}>{item.published ? 'Published' : 'Draft'}</span>
+                </div>
+
+                <div className={styles.cardActions}>
+                  <button type="button" className={styles.secondaryButton} onClick={() => openEdit(item)}>
+                    Edit
+                  </button>
+                  <button type="button" className={styles.dangerButton} onClick={() => handleDelete(item)}>
+                    Delete
+                  </button>
+                </div>
+              </article>
+            );
+          })
+        )}
+      </div>
+
+      <ArticleFormModal
+        open={modalOpen}
+        item={editingItem}
+        onClose={() => setModalOpen(false)}
+        onSaved={handleSaved}
+      />
+    </section>
+  );
+}
+
+function HistoryPanel() {
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const result = await fetchHistory();
+      setEntries(Array.isArray(result) ? result : []);
+    } catch (err) {
+      setError(err.message || 'Unable to load history.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  function openAdd() {
+    setEditingItem(null);
+    setMessage('');
+    setModalOpen(true);
+  }
+
+  function openEdit(item) {
+    setEditingItem(item);
+    setMessage('');
+    setModalOpen(true);
+  }
+
+  async function handleDelete(item) {
+    if (!window.confirm(`Delete "${item.title}"?`)) return;
+
+    setError('');
+    setMessage('');
+    try {
+      await deleteHistoryEntry(item.id);
+      setMessage('History entry deleted.');
+      await load();
+    } catch (err) {
+      setError(err.message || 'Delete failed.');
+    }
+  }
+
+  function handleSaved() {
+    setMessage(editingItem ? 'History entry updated.' : 'History entry added.');
+    load();
+  }
+
+  return (
+    <section className={styles.listPanel} style={{ gridColumn: '1 / -1' }}>
+      <div className={styles.panelHeader}>
+        <h2>History</h2>
+        <p>Manage the club timeline and honours shown on the History page.</p>
+      </div>
+
+      {(error || message) ? (
+        <div className={error ? styles.errorBanner : styles.successBanner}>
+          {error || message}
+        </div>
+      ) : null}
+
+      <div className={styles.headerActions} style={{ marginBottom: 20 }}>
+        <button type="button" className={styles.primaryButton} onClick={openAdd}>
+          + Add entry
+        </button>
+        <button type="button" className={styles.ghostButton} onClick={load} disabled={loading}>
+          Refresh
+        </button>
+      </div>
+
+      <div className={styles.recordList}>
+        {entries.length === 0 ? (
+          <div className={styles.emptyState}>No history entries yet.</div>
+        ) : (
+          entries.map((item) => (
+            <article key={item.id} className={styles.recordCard}>
+              <div className={styles.recordTop}>
+                <div>
+                  <h3 className={styles.recordTitle}>{item.title}</h3>
+                  <p className={styles.recordMeta}>{item.year} · order {item.order}</p>
+                </div>
+                <span className={styles.recordBadge}>{item.type}</span>
+              </div>
+
+              <div className={styles.cardActions}>
+                <button type="button" className={styles.secondaryButton} onClick={() => openEdit(item)}>
+                  Edit
+                </button>
+                <button type="button" className={styles.dangerButton} onClick={() => handleDelete(item)}>
+                  Delete
+                </button>
+              </div>
+            </article>
+          ))
+        )}
+      </div>
+
+      <HistoryEntryFormModal
+        open={modalOpen}
+        item={editingItem}
+        onClose={() => setModalOpen(false)}
+        onSaved={handleSaved}
+      />
+    </section>
+  );
+}
+
+const ROLES = ['SUPER_ADMIN', 'EDITOR', 'VIEWER'];
+
+function UsersPanel() {
+  const { role } = useAdminRole();
+  const isSuperAdmin = role === 'SUPER_ADMIN';
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [form, setForm] = useState({ username: '', password: '', role: 'VIEWER' });
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const result = await fetchUsers();
+      setUsers(Array.isArray(result) ? result : []);
+    } catch (err) {
+      setError(err.message || 'Unable to load users.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function handleCreate(event) {
     event.preventDefault();
-    setLoading(true);
+    setSaving(true);
     setError('');
     setMessage('');
-
     try {
-      if (activeSection === 'league') {
-        const rowPayload = preparePayload(LEAGUE_FIELDS, formState);
-        const rowId = editingId || `league-new-${Date.now()}`;
-        const nextRow = { ...rowPayload, __rowId: rowId };
-
-        setItemsBySection((previous) => {
-          const existing = previous.league || [];
-          const league = editingId
-            ? existing.map((row) => (row.__rowId === editingId ? nextRow : row))
-            : [...existing, nextRow];
-
-          return { ...previous, league };
-        });
-
-        setEditingId(null);
-        resetForm('league');
-        setLeagueDirty(true);
-        setMessage('League row staged. Save the table to publish changes.');
-      } else {
-        const payload = preparePayload(activeConfig.fields, formState);
-
-        if (editingId) {
-          await activeConfig.updateItem(editingId, payload);
-          setMessage(`${activeConfig.singular} updated.`);
-        } else {
-          await activeConfig.createItem(payload);
-          setMessage(`${activeConfig.singular} added.`);
-        }
-
-        setEditingId(null);
-        resetForm(activeSection);
-        await loadSection(activeSection);
-      }
+      await createUser(form);
+      setMessage(`User "${form.username}" created.`);
+      setForm({ username: '', password: '', role: 'VIEWER' });
+      await load();
     } catch (err) {
-      setError(err.message || 'Save failed.');
+      setError(err.message || 'Unable to create user.');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   }
 
-  async function handleSaveLeagueTable() {
-    setLoading(true);
+  async function handleDelete(user) {
+    if (!window.confirm(`Delete user "${user.username}"? This can't be undone.`)) return;
+
+    setDeletingId(user.id);
     setError('');
     setMessage('');
-
     try {
-      const rows = (itemsBySection.league || [])
-        .map(stripLeagueRow)
-        .sort((a, b) => Number(a.position) - Number(b.position));
-
-      await updateLeagueTable(rows);
-      setMessage('League table saved.');
-      await loadSection('league');
+      await deleteUser(user.id);
+      setMessage(`User "${user.username}" deleted.`);
+      await load();
     } catch (err) {
-      setError(err.message || 'Unable to save the league table.');
+      setError(err.message || 'Unable to delete user.');
     } finally {
-      setLoading(false);
+      setDeletingId(null);
     }
   }
+
+  return (
+    <>
+      <section className={styles.editorPanel}>
+        <div className={styles.panelHeader}>
+          <h2>Add user</h2>
+          <p>Only super-admins can see this tab, create accounts, or delete them.</p>
+        </div>
+
+        <form className={styles.editorForm} onSubmit={handleCreate}>
+          <div className={styles.formGrid}>
+            <label className={styles.field}>
+              <span>Username</span>
+              <input
+                type="text"
+                value={form.username}
+                onChange={(event) => setForm((f) => ({ ...f, username: event.target.value }))}
+                required
+              />
+            </label>
+            <label className={styles.field}>
+              <span>Password</span>
+              <input
+                type="password"
+                value={form.password}
+                onChange={(event) => setForm((f) => ({ ...f, password: event.target.value }))}
+                required
+              />
+            </label>
+            <label className={styles.field}>
+              <span>Role</span>
+              <select
+                value={form.role}
+                onChange={(event) => setForm((f) => ({ ...f, role: event.target.value }))}
+              >
+                {ROLES.map((role) => (
+                  <option key={role} value={role}>{role}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className={styles.formActions}>
+            <button type="submit" className={styles.primaryButton} disabled={saving}>
+              {saving ? 'Creating...' : 'Create user'}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section className={styles.listPanel}>
+        <div className={styles.panelHeader}>
+          <h2>Users</h2>
+          <p>{loading ? 'Refreshing...' : `${users.length} accounts.`}</p>
+        </div>
+
+        {(error || message) ? (
+          <div className={error ? styles.errorBanner : styles.successBanner}>
+            {error || message}
+          </div>
+        ) : null}
+
+        <div className={styles.recordList}>
+          {users.length === 0 ? (
+            <div className={styles.emptyState}>No users yet.</div>
+          ) : (
+            users.map((user) => (
+              <article key={user.id} className={styles.recordCard}>
+                <div className={styles.recordTop}>
+                  <div>
+                    <h3 className={styles.recordTitle}>{user.username}</h3>
+                  </div>
+                  <span className={styles.recordBadge}>{user.role}</span>
+                </div>
+
+                {isSuperAdmin && (
+                  <div className={styles.cardActions}>
+                    <button
+                      type="button"
+                      className={styles.dangerButton}
+                      onClick={() => handleDelete(user)}
+                      disabled={deletingId === user.id}
+                    >
+                      {deletingId === user.id ? 'Deleting…' : 'Delete'}
+                    </button>
+                  </div>
+                )}
+              </article>
+            ))
+          )}
+        </div>
+      </section>
+    </>
+  );
+}
+
+const SECTION_PANELS = {
+  sync: SyncPanel,
+  squad: SquadPanel,
+  news: NewsPanel,
+  history: HistoryPanel,
+  users: UsersPanel,
+};
+
+export default function Admin() {
+  const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState(DEFAULT_SECTION);
+
+  const sectionKeys = useMemo(() => Object.keys(SECTION_META), []);
+  const ActivePanel = SECTION_PANELS[activeSection];
 
   function handleLogout() {
     clearAuthToken();
@@ -579,23 +787,16 @@ export default function Admin() {
           </div>
 
           <div className={styles.headerActions}>
-            {activeSection === 'league' ? (
-              <button
-                type="button"
-                className={styles.secondaryButton}
-                onClick={handleSaveLeagueTable}
-                disabled={loading || !leagueDirty}
-              >
-                Save table
-              </button>
-            ) : null}
+            <Link to="/" className={styles.ghostButton}>
+              View site
+            </Link>
             <button type="button" className={styles.ghostButton} onClick={handleLogout}>
               Log out
             </button>
           </div>
         </header>
 
-        <nav className={styles.sectionTabs} aria-label="Admin sections">
+        <nav className={styles.sectionTabs} style={{ gridTemplateColumns: `repeat(${sectionKeys.length}, minmax(0, 1fr))` }} aria-label="Admin sections">
           {sectionKeys.map((section) => (
             <button
               key={section}
@@ -608,119 +809,8 @@ export default function Admin() {
           ))}
         </nav>
 
-        {(error || message) ? (
-          <div className={error ? styles.errorBanner : styles.successBanner}>
-            {error || message}
-          </div>
-        ) : null}
-
         <div className={styles.workspace}>
-          <section className={styles.editorPanel}>
-            <div className={styles.panelHeader}>
-              <h2>{editingId ? 'Edit entry' : 'Add entry'}</h2>
-              <p>
-                {activeSection === 'league'
-                  ? 'Stage as many row changes as you need, then save the table.'
-                  : `Create or update ${SECTION_META[activeSection].label.toLowerCase()} here.`}
-              </p>
-            </div>
-
-            <form className={styles.editorForm} onSubmit={handleSubmit}>
-              <div className={styles.formGrid}>
-                {(activeSection === 'league' ? LEAGUE_FIELDS : activeConfig.fields).map((field) => {
-                  const className = `${styles.field} ${field.type === 'textarea' ? styles.fieldWide : ''} ${field.type === 'checkbox' ? styles.fieldCheckbox : ''}`;
-
-                  if (field.type === 'checkbox') {
-                    return (
-                      <div key={field.name} className={className}>
-                        {renderField(field, formState[field.name], (event) => handleFieldChange(field, event))}
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <label key={field.name} className={className}>
-                      <span>{field.label}</span>
-                      {renderField(field, formState[field.name], (event) => handleFieldChange(field, event))}
-                    </label>
-                  );
-                })}
-              </div>
-
-              <div className={styles.formActions}>
-                <button type="submit" className={styles.primaryButton} disabled={loading}>
-                  {loading
-                    ? 'Saving...'
-                    : editingId
-                      ? 'Update entry'
-                      : 'Add entry'}
-                </button>
-                <button
-                  type="button"
-                  className={styles.ghostButton}
-                  onClick={handleCancelEdit}
-                  disabled={loading}
-                >
-                  Clear form
-                </button>
-              </div>
-            </form>
-          </section>
-
-          <section className={styles.listPanel}>
-            <div className={styles.panelHeader}>
-              <h2>{SECTION_META[activeSection].label}</h2>
-              <p>{loading ? 'Refreshing data...' : `${activeItems.length} records loaded.`}</p>
-            </div>
-
-            <div className={styles.recordList}>
-              {activeItems.length === 0 ? (
-                <div className={styles.emptyState}>No records yet.</div>
-              ) : (
-                activeItems.map((item) => (
-                  <article key={item.id || item.__rowId} className={styles.recordCard}>
-                    <div className={styles.recordTop}>
-                      <div>
-                        <h3 className={styles.recordTitle}>
-                          {activeSection === 'league' ? item.team : activeConfig.summary(item)}
-                        </h3>
-                        <p className={styles.recordMeta}>
-                          {activeSection === 'league'
-                            ? `Pos ${item.position} · ${item.points} pts · ${item.played} played`
-                            : activeConfig.detail(item)}
-                        </p>
-                      </div>
-                      <span className={styles.recordBadge}>
-                        {activeSection === 'league'
-                          ? 'Row'
-                          : activeConfig.badge(item)}
-                      </span>
-                    </div>
-
-                    {activeSection === 'league' ? (
-                      <div className={styles.inlineStats}>
-                        <span>W {item.won}</span>
-                        <span>D {item.drawn}</span>
-                        <span>L {item.lost}</span>
-                        <span>GF {item.goalsFor}</span>
-                        <span>GA {item.goalsAgainst}</span>
-                        <span>GD {item.goalDifference}</span>
-                      </div>
-                    ) : null}
-
-                    <div className={styles.cardActions}>
-                      <button type="button" className={styles.secondaryButton} onClick={() => handleEdit(item)}>
-                        Edit
-                      </button>
-                      <button type="button" className={styles.dangerButton} onClick={() => handleDelete(item)}>
-                        Delete
-                      </button>
-                    </div>
-                  </article>
-                ))
-              )}
-            </div>
-          </section>
+          <ActivePanel />
         </div>
       </div>
     </div>

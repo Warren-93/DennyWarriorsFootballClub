@@ -31,8 +31,6 @@ export default defineConfig(({ mode }) => {
       'process.env.PUBLIC_URL': JSON.stringify(''),
       'process.env.REACT_APP_API_URL': JSON.stringify(env.VITE_API_URL || env.REACT_APP_API_URL || ''),
       'process.env.REACT_APP_ADMIN_LOGIN_PATH': JSON.stringify(env.VITE_ADMIN_LOGIN_PATH || env.REACT_APP_ADMIN_LOGIN_PATH || ''),
-      'process.env.REACT_APP_LOCAL_ADMIN_USERNAME': JSON.stringify(env.VITE_LOCAL_ADMIN_USERNAME || env.REACT_APP_LOCAL_ADMIN_USERNAME || ''),
-      'process.env.REACT_APP_LOCAL_ADMIN_PASSWORD': JSON.stringify(env.VITE_LOCAL_ADMIN_PASSWORD || env.REACT_APP_LOCAL_ADMIN_PASSWORD || ''),
     },
   };
 });

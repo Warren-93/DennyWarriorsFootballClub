@@ -7,6 +7,7 @@ import {
   useLocation,
 } from 'react-router-dom';
 import { SpeedInsights } from '@vercel/speed-insights/react';
+import { Analytics } from '@vercel/analytics/react';
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -17,6 +18,9 @@ import Results from './pages/Results';
 import LeagueTable from './pages/LeagueTable';
 import Squad from './pages/Squad';
 import News from './pages/News';
+import ArticleDetail from './pages/ArticleDetail';
+import History from './pages/History';
+import Media from './pages/Media';
 import Login from './pages/admin/Login';
 import Admin from './pages/admin/Admin';
 import { getAuthToken } from './api';
@@ -43,6 +47,9 @@ function AppLayout() {
           <Route path="/table" element={<LeagueTable />} />
           <Route path="/squad" element={<Squad />} />
           <Route path="/news" element={<News />} />
+          <Route path="/news/:slug" element={<ArticleDetail />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/media" element={<Media />} />
           <Route path="/admin/login" element={<Login />} />
           <Route
             path="/admin"
@@ -65,6 +72,7 @@ function App() {
     <BrowserRouter>
       <AppLayout />
       <SpeedInsights />
+      <Analytics />
     </BrowserRouter>
   );
 }

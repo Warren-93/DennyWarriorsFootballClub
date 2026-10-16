@@ -7,8 +7,6 @@ import {
 } from '../../api';
 import styles from './Admin.module.css';
 
-const IS_DEV = process.env.NODE_ENV !== 'production';
-
 export default function Login() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
@@ -66,13 +64,6 @@ export default function Login() {
               <p>Use your API login details, or paste an existing JWT token.</p>
             </div>
 
-            {IS_DEV ? (
-              <div className={styles.devCredentials}>
-                <strong>Local dev login</strong>
-                <span>Username: admin</span>
-                <span>Password: warriors123</span>
-              </div>
-            ) : null}
 
             <label className={styles.field}>
               <span>Username</span>

@@ -1,25 +1,30 @@
-import { request, buildQuery } from './client';
+import { request, buildQuery, unwrapList } from './client';
 
-export function fetchNews(params) {
-  return request(`/news${buildQuery(params)}`);
+export async function fetchNews(params) {
+  return unwrapList(await request(`/news${buildQuery(params)}`));
 }
 
-export function fetchArticleById(id) {
-  return request(`/news/${id}`);
+export function fetchArticleBySlug(slug) {
+  return request(`/news/${slug}`);
 }
 
 export function fetchLatestNews(limit = 3) {
-  return request(`/news${buildQuery({ limit })}`);
+  return fetchNews({ limit });
+}
+
+// Admin-only — sees drafts too, unlike the public listing above.
+export async function fetchAllArticlesForAdmin() {
+  return unwrapList(await request('/admin/news'));
 }
 
 export function createArticle(article) {
-  return request('/news', { method: 'POST', body: JSON.stringify(article) });
+  return request('/admin/news', { method: 'POST', body: JSON.stringify(article) });
 }
 
 export function updateArticle(id, article) {
-  return request(`/news/${id}`, { method: 'PUT', body: JSON.stringify(article) });
+  return request(`/admin/news/${id}`, { method: 'PUT', body: JSON.stringify(article) });
 }
 
 export function deleteArticle(id) {
-  return request(`/news/${id}`, { method: 'DELETE' });
+  return request(`/admin/news/${id}`, { method: 'DELETE' });
 }
