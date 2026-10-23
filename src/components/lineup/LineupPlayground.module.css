@@ -1,0 +1,96 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+}
+
+.group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--gray-200);
+  background: var(--white);
+  color: var(--gray-600);
+  transition: all 0.15s ease;
+}
+
+.chip:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.chipActive,
+.chipActive:hover {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--white);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.primary,
+.secondary {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+}
+
+.primary {
+  background: var(--green);
+  color: var(--white);
+}
+
+.primary:hover {
+  background: var(--green-dark);
+}
+
+.secondary {
+  border: 1.5px solid var(--gray-200);
+  color: var(--gray-600);
+}
+
+.secondary:hover {
+  border-color: var(--gray-400);
+}
+
+.chip:focus-visible,
+.primary:focus-visible,
+.secondary:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.source {
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+@media (max-width: 560px) {
+  .actions {
+    margin-left: 0;
+  }
+}
