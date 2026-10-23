@@ -1,12 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import LineupReveal from './LineupReveal';
+import ExportPanel from './export/ExportPanel';
 import { FORMATION_KEYS } from './formations';
 import { autoPickLineup } from './lineupModel';
 import styles from './LineupPlayground.module.css';
 
 const SPEEDS = [0.5, 1, 1.5];
 
-// Wraps the reveal with demo controls: formation, speed, replay and skip.
+// Wraps the reveal with demo controls (formation, speed, replay, skip) and
+// the social export panel.
 // The XI is auto-picked from whatever squad it's given.
 export default function LineupPlayground({ squad, fixture, sourceLabel, badgeUrl }) {
   const [formation, setFormation] = useState('4-3-3');
@@ -77,6 +79,8 @@ export default function LineupPlayground({ squad, fixture, sourceLabel, badgeUrl
       />
 
       {sourceLabel && <p className={styles.source}>{sourceLabel}</p>}
+
+      <ExportPanel lineup={lineup} fixture={fixture} badgeUrl={badgeUrl} />
     </div>
   );
 }

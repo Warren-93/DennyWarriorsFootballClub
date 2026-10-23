@@ -31,6 +31,11 @@ navbar).
 | `src/components/lineup/lineupModel.js` | `resolveLineup()` for a saved lineup, `autoPickLineup()` for the demo. |
 | `src/components/lineup/LineupPlayground.js` | Demo controls: formation, speed, replay, skip. |
 | `src/pages/LineupDemo.js` | The `/lineup-demo` page. |
+| `src/components/lineup/timeline.js` | Step timings shared by the page animation and the video export. |
+| `src/components/lineup/export/layouts.js` | The four social sizes and where each piece sits on them. |
+| `src/components/lineup/export/drawFrame.js` | Canvas copy of the reveal, drawn as a function of time. |
+| `src/components/lineup/export/exportVideo.js` | Turns frames into an MP4 (or WebM fallback) and a PNG. |
+| `src/components/lineup/export/ExportPanel.js` | The "Export for social" panel with previews and download links. |
 
 ## How the animation works
 
@@ -49,6 +54,38 @@ Player tokens sit on the tilted pitch and are counter-rotated so they stand
 upright. The stage uses container query units (`cqw`), so it scales like a
 video frame and stacks the pitch over the teamsheet below 640px wide. With
 "reduce motion" turned on, it skips straight to the finished teamsheet.
+
+## Export for social
+
+Under the animation, **Export all sizes** renders the current lineup at four sizes,
+one after another, and offers each as a video and a PNG of the finished teamsheet:
+
+| Size | Pixels | Best for |
+| --- | --- | --- |
+| Landscape 16:9 | 1920 × 1080 | Facebook and X posts, YouTube |
+| Square 1:1 | 1080 × 1080 | Instagram and Facebook feed |
+| Portrait 4:5 | 1080 × 1350 | Instagram feed (the biggest feed post) |
+| Story 9:16 | 1080 × 1920 | Stories, Reels, TikTok. Keeps clear of the app's own buttons at the top and bottom |
+
+Everything happens in the browser, so nothing is uploaded and no server is needed.
+
+- The page animation is HTML and CSS, which a browser can't record directly, so
+  `drawFrame.js` redraws the same graphic on a `<canvas>`. Each frame is drawn
+  from a time value, using the same timings (`timeline.js`), colours and
+  easing curves as the CSS.
+- **Chrome, Edge and Safari** encode each frame with WebCodecs as H.264, and
+  [`mp4-muxer`](https://github.com/Vanilagy/mp4-muxer) packs the frames into an
+  MP4 file. This runs faster than real time and doesn't drop frames. The
+  library is only loaded when you export.
+- **Other browsers** fall back to recording the canvas in real time with
+  `MediaRecorder`. If that can only make WebM, the panel says so, because
+  Instagram wants MP4.
+- Player photos are drawn when their server allows cross-origin requests.
+  Otherwise the shirt number is shown, because an image without that
+  permission would block the export.
+
+To change a layout, edit its boxes in `layouts.js`. All sizes are in pixels on
+that layout's canvas.
 
 ## What a real version would need
 
@@ -74,4 +111,5 @@ each slot and choose the subs.
 
 **Site.** Pass the saved lineup through `resolveLineup(lineup, squad)` and
 render `<LineupReveal lineup={…} fixture={…} />` on the fixture page and the
-home page's next-match card.
+home page's next-match card. `<ExportPanel lineup={…} fixture={…} />` would move
+into Admin, next to the lineup picker.

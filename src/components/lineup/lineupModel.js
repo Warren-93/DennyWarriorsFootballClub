@@ -64,3 +64,13 @@ export function splitName(name = '') {
   if (parts.length <= 1) return { first: '', last: parts[0] || 'Unnamed' };
   return { first: parts.slice(0, -1).join(' '), last: parts[parts.length - 1] };
 }
+
+// "Sat 24 Oct · KO 15:00" from the fields /fixtures/next returns.
+export function formatKickoff(fixture) {
+  if (!fixture) return '';
+  const when = fixture.date || fixture.kickoffAt;
+  const day = when
+    ? new Date(when).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+    : '';
+  return [day, fixture.time && `KO ${fixture.time}`].filter(Boolean).join(' · ');
+}

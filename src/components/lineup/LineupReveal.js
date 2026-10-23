@@ -1,32 +1,21 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { FORMATIONS } from './formations';
-import { splitName } from './lineupModel';
+import { formatKickoff, splitName } from './lineupModel';
+import { stepDurations } from './timeline';
 import styles from './LineupReveal.module.css';
 
-// Timeline, in ms at 1x speed. The component walks through these steps:
+// The component walks through the steps in ./timeline:
 //   0            intro card ("Team news")
 //   1            pitch tilts in and its lines draw
 //   2 … n+1      one starter lands per step, keeper first
 //   n+2          substitutes strip slides in
 //   n+3          finished, everything at rest
-const INTRO_MS = 1800;
-const PITCH_MS = 900;
-const PLAYER_MS = 650;
-const LAST_PLAYER_MS = 1100;
-const BENCH_MS = 1000;
+
+const plural = (n, noun) => (n === 1 ? noun : `${noun}s`);
 
 function prefersReducedMotion() {
   return typeof window !== 'undefined'
     && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-}
-
-function formatKickoff(fixture) {
-  if (!fixture) return '';
-  const when = fixture.date || fixture.kickoffAt;
-  const day = when
-    ? new Date(when).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
-    : '';
-  return [day, fixture.time && `KO ${fixture.time}`].filter(Boolean).join(' · ');
 }
 
 export default function LineupReveal({
@@ -43,10 +32,7 @@ export default function LineupReveal({
   const starters = lineup.starters.filter((s) => slotById.has(s.slot));
   const n = starters.length;
 
-  const durations = useMemo(
-    () => [INTRO_MS, PITCH_MS, ...starters.map((_, i) => (i === n - 1 ? LAST_PLAYER_MS : PLAYER_MS)), BENCH_MS],
-    [n] // eslint-disable-line react-hooks/exhaustive-deps
-  );
+  const durations = useMemo(() => stepDurations(n), [n]);
   const finalStep = durations.length;
 
   const [step, setStep] = useState(0);
@@ -157,8 +143,8 @@ export default function LineupReveal({
                       {current.player.captain && <span className={styles.spotCaptain}>Captain</span>}
                     </div>
                     <div className={styles.spotStats}>
-                      <span><b>{current.player.appearances ?? 0}</b> apps</span>
-                      <span><b>{current.player.goals ?? 0}</b> goals</span>
+                      <span><b>{current.player.appearances ?? 0}</b> {plural(current.player.appearances ?? 0, 'app')}</span>
+                      <span><b>{current.player.goals ?? 0}</b> {plural(current.player.goals ?? 0, 'goal')}</span>
                     </div>
                   </div>
                 </div>
