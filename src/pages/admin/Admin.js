@@ -14,6 +14,8 @@ import {
   triggerSync,
   fetchSyncSettings,
   updateSyncSettings,
+  fetchCometLinks,
+  updateCometLinks,
   fetchUsers,
   createUser,
   deleteUser,
@@ -58,7 +60,124 @@ function formatDateTimeLabel(value) {
   });
 }
 
+const LINK_SOURCE_LABELS = {
+  ADMIN_PANEL: 'Set here in the admin panel',
+  ENVIRONMENT: 'Set on Render (COMET environment variable)',
+  NOT_SET: 'Not set',
+};
+
+function describeLink(link) {
+  if (!link) return 'Loading…';
+  const parts = [LINK_SOURCE_LABELS[link.source] || link.source];
+  if (link.keyHint) parts.push(`key ending ${link.keyHint.replace('…', '')}`);
+  if (link.filters) parts.push(`filters: ${link.filters}`);
+  return parts.join(' · ');
+}
+
+// Each Comet link is a saved report in Comet with its competition baked in,
+// so a new season usually means a new link from whoever has Comet access.
+// Pasting it here takes effect on the next sync, with no Render redeploy.
+function CometLinksForm() {
+  const [links, setLinks] = useState(null);
+  const [fixturesUrl, setFixturesUrl] = useState('');
+  const [standingsUrl, setStandingsUrl] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    fetchCometLinks()
+      .then(setLinks)
+      .catch((err) => setError(err.message || 'Unable to load Comet links.'));
+  }, []);
+
+  async function save(update, doneMessage) {
+    setSaving(true);
+    setError('');
+    setMessage('');
+    try {
+      setLinks(await updateCometLinks(update));
+      setFixturesUrl('');
+      setStandingsUrl('');
+      setMessage(doneMessage);
+    } catch (err) {
+      setError(err.message || 'Unable to save Comet links.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    save(
+      {
+        fixturesUrl: fixturesUrl.trim() || undefined,
+        standingsUrl: standingsUrl.trim() || undefined,
+      },
+      'Comet links saved. Trigger a sync to pull the new data now.',
+    );
+  }
+
+  return (
+    <>
+      <h3 className={styles.recordTitle}>Comet report links</h3>
+      <p className={styles.recordMeta} style={{ marginBottom: 14 }}>
+        When a new season starts, ask the club&apos;s Comet user for new report links (Copy API Code on each report in
+        My Reports) and paste them here. Links are never shown again after saving because they contain the API key.
+      </p>
+      {(error || message) ? (
+        <div className={error ? styles.errorBanner : styles.successBanner}>{error || message}</div>
+      ) : null}
+      <p className={styles.recordMeta}>Fixtures: {describeLink(links?.fixtures)}</p>
+      <p className={styles.recordMeta} style={{ marginBottom: 14 }}>League table: {describeLink(links?.standings)}</p>
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12, marginBottom: 28 }}>
+        <label className={styles.field}>
+          <span>New fixtures link</span>
+          <input
+            type="url"
+            placeholder="https://www.scottishfacomet.co.uk/data-backend/api/public/areports/run/0/25/?API_KEY=…"
+            value={fixturesUrl}
+            onChange={(event) => setFixturesUrl(event.target.value)}
+            autoComplete="off"
+          />
+        </label>
+        <label className={styles.field}>
+          <span>New league table link</span>
+          <input
+            type="url"
+            placeholder="https://www.scottishfacomet.co.uk/data-backend/api/public/areports/run/0/25/?API_KEY=…"
+            value={standingsUrl}
+            onChange={(event) => setStandingsUrl(event.target.value)}
+            autoComplete="off"
+          />
+        </label>
+        <div className={styles.headerActions}>
+          <button
+            type="submit"
+            className={styles.secondaryButton}
+            disabled={saving || (!fixturesUrl.trim() && !standingsUrl.trim())}
+          >
+            {saving ? 'Saving…' : 'Save links'}
+          </button>
+          {links && (links.fixtures?.source === 'ADMIN_PANEL' || links.standings?.source === 'ADMIN_PANEL') ? (
+            <button
+              type="button"
+              className={styles.ghostButton}
+              disabled={saving}
+              onClick={() => save({ fixturesUrl: '', standingsUrl: '' }, 'Back to the links set on Render.')}
+            >
+              Use Render links instead
+            </button>
+          ) : null}
+        </div>
+      </form>
+    </>
+  );
+}
+
 function SyncPanel() {
+  const { role } = useAdminRole();
+  const isSuperAdmin = role === 'SUPER_ADMIN';
   const [logs, setLogs] = useState([]);
   const [fixtures, setFixtures] = useState([]);
   const [table, setTable] = useState([]);
@@ -127,12 +246,23 @@ function SyncPanel() {
     }
   }
 
+  const latestWarnings = logs[0]?.warnings ?? [];
+
   return (
     <section className={styles.listPanel} style={{ gridColumn: '1 / -1' }}>
       <div className={styles.panelHeader}>
         <h2>League Sync</h2>
         <p>Fixtures, results, and the league table are pulled automatically from the league API on a schedule.</p>
       </div>
+
+      {latestWarnings.length > 0 ? (
+        <div className={styles.warningBanner}>
+          <strong>The last sync needs attention:</strong>
+          <ul>
+            {latestWarnings.map((warning) => <li key={warning}>{warning}</li>)}
+          </ul>
+        </div>
+      ) : null}
 
       {(error || message) ? (
         <div className={error ? styles.errorBanner : styles.successBanner}>
@@ -176,6 +306,8 @@ function SyncPanel() {
         </button>
       </form>
 
+      {isSuperAdmin ? <CometLinksForm /> : null}
+
       <h3 className={styles.recordTitle}>Recent sync runs</h3>
       <div className={styles.recordList}>
         {logs.length === 0 ? (
@@ -189,6 +321,7 @@ function SyncPanel() {
                   <p className={styles.recordMeta}>
                     {formatDateTimeLabel(log.startedAt)} · {log.recordsProcessed ?? 0} processed, {log.recordsUpserted ?? 0} upserted
                     {log.errorMessage ? ` · ${log.errorMessage}` : ''}
+                    {log.warnings?.length ? ` · ${log.warnings.length} warning(s)` : ''}
                   </p>
                 </div>
               </div>
