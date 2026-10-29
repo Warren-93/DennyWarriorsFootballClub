@@ -3,17 +3,23 @@ import { useLeagueTable } from '../hooks';
 import ApiState from '../components/ApiState';
 import styles from './LeagueTable.module.css';
 import sharedStyles from './PageShared.module.css';
+import { formatSeason } from '../config/season';
 
 export default function LeagueTable() {
   const { data: table, loading, error, refetch } = useLeagueTable();
   const badgeUrl = `${process.env.PUBLIC_URL || ''}/badge.png`;
+  // The competition (e.g. "Appin Warriors Premier League 25/26") comes from
+  // Comet with the table, so the heading follows the season by itself.
+  const competition = table?.[0]?.competition;
+  const season = formatSeason(table?.[0]?.season);
+  const subtitle = competition || (season ? `${season} Season Standings` : 'Season Standings');
 
   return (
     <div className={sharedStyles.page}>
       <div className={sharedStyles.pageHero}>
         <div className="container">
           <h1 className={sharedStyles.pageTitle}>League Table</h1>
-          <p className={sharedStyles.pageSubtitle}>2025/26 Season Standings</p>
+          <p className={sharedStyles.pageSubtitle}>{subtitle}</p>
         </div>
       </div>
 

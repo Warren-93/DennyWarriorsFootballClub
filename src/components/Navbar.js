@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import styles from './Navbar.module.css';
 import Badge from './Badge';
 import useAdminRole from '../hooks/useAdminRole';
+import { currentSeasonLabel } from '../config/season';
 
 const navLinks = [
   { to: '/', label: 'Home' },
@@ -63,7 +64,7 @@ export default function Navbar() {
 
         {/* Right side */}
         <div className={styles.actions}>
-          <Badge variant="blue" label="2026/27 Season" />
+          <Badge variant="blue" label={`${currentSeasonLabel()} Season`} />
           <Link to={adminPath} className={styles.adminLink}>
             {loggedIn ? 'Admin' : 'Staff login'}
           </Link>
