@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useResults, useSeasons, useCompetitions } from '../hooks';
 import ApiState from '../components/ApiState';
 import styles from './PageShared.module.css';
+import { CLUB_NAME } from '../config/club';
 
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-GB', {
@@ -86,13 +87,13 @@ export default function Results() {
               return (
                 <div key={r.id} className={styles.matchCard}>
                   <div className={styles.matchMeta}>
-                    <span className="badge badge-blue">{r.competition}</span>
+                    <span className="badge badge-primary">{r.competition}</span>
                     <span className={styles.matchDateText}>{formatDate(r.date)}</span>
                   </div>
                   <div className={styles.matchTeams}>
                     {r.home ? (
                       <>
-                        <span className={`${styles.team} ${styles.teamHighlight}`}>Denny Warriors</span>
+                        <span className={`${styles.team} ${styles.teamHighlight}`}>{CLUB_NAME}</span>
                         <span className={styles.scoreBlock}>{r.goalsFor} – {r.goalsAgainst}</span>
                         <span className={styles.team}>{r.opponent}</span>
                       </>
@@ -100,13 +101,13 @@ export default function Results() {
                       <>
                         <span className={styles.team}>{r.opponent}</span>
                         <span className={styles.scoreBlock}>{r.goalsAgainst} – {r.goalsFor}</span>
-                        <span className={`${styles.team} ${styles.teamHighlight}`}>Denny Warriors</span>
+                        <span className={`${styles.team} ${styles.teamHighlight}`}>{CLUB_NAME}</span>
                       </>
                     )}
                   </div>
                   <div className={styles.matchVenueTag}>
                     <span className={`badge badge-result-${result.toLowerCase()}`}>{result}</span>
-                    <span className={`badge ${r.home ? 'badge-green' : 'badge-blue'}`}>
+                    <span className={`badge ${r.home ? 'badge-secondary' : 'badge-primary'}`}>
                       {r.home ? 'Home' : 'Away'}
                     </span>
                   </div>

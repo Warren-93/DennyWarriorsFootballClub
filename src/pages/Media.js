@@ -4,6 +4,7 @@ import { useVideos } from '../hooks';
 import ApiState from '../components/ApiState';
 import sharedStyles from './PageShared.module.css';
 import styles from './Media.module.css';
+import { CLUB_NAME } from '../config/club';
 
 const TABS = [
   { key: 'videos', label: 'Videos' },
@@ -64,7 +65,7 @@ function LivePanel() {
       <div className={styles.videoWrapper}>
         <iframe
           src={`https://www.youtube.com/embed/live_stream?channel=${YOUTUBE_CHANNEL_ID}`}
-          title="Denny Warriors FC live stream"
+          title={`${CLUB_NAME} live stream`}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         />

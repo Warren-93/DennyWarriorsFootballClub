@@ -1,10 +1,13 @@
 :root {
-  --blue: #2D5FA6;
-  --blue-dark: #1e4278;
-  --blue-light: #e8eef8;
-  --green: #1E8A3C;
-  --green-dark: #155e29;
-  --green-light: #e6f4eb;
+  /* Camelon Juniors Warriors: red and white, from the club badge. */
+  --primary: #ED1B24;
+  --primary-dark: #B3121A;
+  --primary-light: #FDE8E9;
+  --secondary: #A0141B;
+  --secondary-dark: #7A0F14;
+  --secondary-light: #FBEAEB;
+  /* Result colours carry meaning (win/loss), so they stay fixed. */
+  --result-win: #1E8A3C;
   --white: #ffffff;
   --off-white: #f7f8fa;
   --gray-100: #f0f1f3;
@@ -100,7 +103,7 @@ button {
 .accent-bar {
   width: 48px;
   height: 4px;
-  background: linear-gradient(to right, var(--blue), var(--green));
+  background: linear-gradient(to right, var(--primary), var(--secondary));
   border-radius: 2px;
   margin-bottom: 12px;
 }
@@ -120,12 +123,23 @@ button {
 }
 
 .btn-primary {
-  background: var(--blue);
+  background: var(--primary);
   color: var(--white);
 }
 
 .btn-primary:hover {
-  background: var(--blue-dark);
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+/* For use on red backgrounds, where .btn-primary would vanish. */
+.btn-light {
+  background: var(--white);
+  color: var(--primary-dark);
+}
+
+.btn-light:hover {
+  background: var(--primary-light);
   transform: translateY(-1px);
 }
 
@@ -142,12 +156,12 @@ button {
 
 .btn-outline {
   background: transparent;
-  color: var(--blue);
-  border: 2px solid var(--blue);
+  color: var(--primary);
+  border: 2px solid var(--primary);
 }
 
 .btn-outline:hover {
-  background: var(--blue);
+  background: var(--primary);
   color: var(--white);
 }
 
@@ -161,18 +175,18 @@ button {
   letter-spacing: 0.5px;
 }
 
-.badge-blue {
-  background: var(--blue-light);
-  color: var(--blue-dark);
+.badge-primary {
+  background: var(--primary-light);
+  color: var(--primary-dark);
 }
 
-.badge-green {
-  background: var(--green-light);
-  color: var(--green-dark);
+.badge-secondary {
+  background: var(--secondary-light);
+  color: var(--secondary-dark);
 }
 
 .badge-result-w {
-  background: var(--green);
+  background: var(--result-win);
   color: white;
 }
 .badge-result-d {

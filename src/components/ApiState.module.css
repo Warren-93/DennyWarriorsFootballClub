@@ -12,7 +12,7 @@
   width: 36px;
   height: 36px;
   border: 3px solid var(--gray-200);
-  border-top-color: var(--blue);
+  border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -45,7 +45,7 @@
   margin-top: 4px;
   padding: 8px 20px;
   border-radius: var(--radius-sm);
-  background: var(--blue);
+  background: var(--primary);
   color: var(--white);
   font-family: var(--font-display);
   font-size: 13px;
@@ -57,5 +57,5 @@
 }
 
 .retryBtn:hover {
-  background: var(--blue-dark);
+  background: var(--primary-dark);
 }

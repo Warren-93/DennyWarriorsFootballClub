@@ -12,7 +12,7 @@
 }
 
 .table thead {
-  background: var(--blue);
+  background: var(--primary);
 }
 
 .table thead th {
@@ -69,15 +69,15 @@
 }
 
 .clubRow {
-  background: #eef3fb !important;
+  background: var(--primary-light) !important;
 }
 
 .clubRow td {
-  color: var(--blue-dark) !important;
+  color: var(--primary-dark) !important;
 }
 
 .clubRow .pts {
-  color: var(--blue) !important;
+  color: var(--primary) !important;
 }
 
 .clubName {
@@ -92,7 +92,7 @@
 }
 
 .gdPos {
-  color: var(--green-dark) !important;
+  color: var(--secondary-dark) !important;
   font-weight: 700 !important;
 }
 

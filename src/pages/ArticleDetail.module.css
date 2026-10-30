@@ -9,12 +9,12 @@
   font-family: var(--font-display);
   font-size: 13px;
   font-weight: 700;
-  color: var(--blue);
+  color: var(--primary);
   text-decoration: none;
 }
 
 .backLink:hover {
-  color: var(--blue-dark);
+  color: var(--primary-dark);
 }
 
 .meta {

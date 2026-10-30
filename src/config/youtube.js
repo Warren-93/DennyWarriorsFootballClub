@@ -1,4 +1,5 @@
-// Denny Warriors FC's YouTube channel (youtube.com/@dennywarriorsfc6565).
+// The club's YouTube channel (currently the Denny Warriors channel,
+// youtube.com/@dennywarriorsfc6565).
 // Update CHANNEL_ID here if the club ever changes channels — everything else
 // on the Media page derives from it, no other code needs to change.
 export const YOUTUBE_CHANNEL_ID = 'UCg6mRZeKtfdeP8dFTgPszMw';

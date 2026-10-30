@@ -2,8 +2,8 @@
   min-height: 100vh;
   padding: 32px 24px 48px;
   background:
-    radial-gradient(circle at top left, rgba(45, 95, 166, 0.2), transparent 28%),
-    radial-gradient(circle at top right, rgba(30, 138, 60, 0.18), transparent 24%),
+    radial-gradient(circle at top left, color-mix(in srgb, var(--primary) 20%, transparent), transparent 28%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--secondary) 18%, transparent), transparent 24%),
     linear-gradient(180deg, #f7fafc 0%, #edf2f7 100%);
 }
 
@@ -17,8 +17,8 @@
   margin-bottom: 12px;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(45, 95, 166, 0.12);
-  color: #1e4278;
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--primary-dark);
   font-family: var(--font-display);
   font-size: 12px;
   font-weight: 700;
@@ -82,13 +82,13 @@
 
 .sectionTab:hover {
   transform: translateY(-1px);
-  border-color: rgba(45, 95, 166, 0.28);
+  border-color: color-mix(in srgb, var(--primary) 28%, transparent);
   box-shadow: 0 14px 28px rgba(15, 23, 32, 0.06);
 }
 
 .sectionTabActive {
-  border-color: rgba(45, 95, 166, 0.38);
-  background: linear-gradient(135deg, #2d5fa6 0%, #1e8a3c 100%);
+  border-color: color-mix(in srgb, var(--primary) 38%, transparent);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   color: #ffffff;
 }
 
@@ -116,8 +116,8 @@
   justify-content: center;
   min-height: 560px;
   background:
-    linear-gradient(135deg, rgba(45, 95, 166, 0.96) 0%, rgba(30, 138, 60, 0.9) 100%),
-    #1e4278;
+    linear-gradient(135deg, color-mix(in srgb, var(--primary) 96%, transparent) 0%, color-mix(in srgb, var(--secondary) 90%, transparent) 100%),
+    var(--primary-dark);
   color: #ffffff;
 }
 
@@ -190,8 +190,8 @@
 .field select:focus,
 .field textarea:focus {
   outline: none;
-  border-color: rgba(45, 95, 166, 0.65);
-  box-shadow: 0 0 0 4px rgba(45, 95, 166, 0.12);
+  border-color: color-mix(in srgb, var(--primary) 65%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent);
 }
 
 .field textarea {
@@ -267,15 +267,15 @@
 }
 
 .primaryButton {
-  background: linear-gradient(135deg, #2d5fa6 0%, #1e8a3c 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   color: #ffffff;
-  box-shadow: 0 16px 30px rgba(45, 95, 166, 0.22);
+  box-shadow: 0 16px 30px color-mix(in srgb, var(--primary) 22%, transparent);
 }
 
 .secondaryButton {
-  border: 1px solid rgba(45, 95, 166, 0.25);
-  background: rgba(45, 95, 166, 0.08);
-  color: #1e4278;
+  border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  color: var(--primary-dark);
 }
 
 .ghostButton {
@@ -325,8 +325,8 @@
 .recordBadge {
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(45, 95, 166, 0.1);
-  color: #1e4278;
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  color: var(--primary-dark);
   font-size: 0.76rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -360,9 +360,9 @@
 
 .successBanner {
   margin-bottom: 20px;
-  border: 1px solid rgba(30, 138, 60, 0.18);
-  background: rgba(30, 138, 60, 0.08);
-  color: #155e29;
+  border: 1px solid color-mix(in srgb, var(--secondary) 18%, transparent);
+  background: color-mix(in srgb, var(--secondary) 8%, transparent);
+  color: var(--secondary-dark);
 }
 
 .errorBanner {

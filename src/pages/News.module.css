@@ -21,13 +21,13 @@
 }
 
 .filterBtn:hover {
-  border-color: var(--blue);
-  color: var(--blue);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .filterActive {
-  background: var(--blue);
-  border-color: var(--blue);
+  background: var(--primary);
+  border-color: var(--primary);
   color: var(--white) !important;
 }
 
@@ -102,14 +102,14 @@
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.3px;
-  color: var(--blue);
+  color: var(--primary);
   cursor: pointer;
   text-decoration: none;
   transition: color 0.15s ease;
 }
 
 .readMore:hover {
-  color: var(--blue-dark);
+  color: var(--primary-dark);
 }
 
 .empty {

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useFixtures, useSeasons, useCompetitions } from '../hooks';
 import ApiState from '../components/ApiState';
 import styles from './PageShared.module.css';
+import { CLUB_NAME } from '../config/club';
 
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-GB', {
@@ -80,14 +81,14 @@ export default function Fixtures() {
             {fixtures?.map((f) => (
               <div key={f.id} className={styles.matchCard}>
                 <div className={styles.matchMeta}>
-                  <span className="badge badge-blue">{f.competition}</span>
+                  <span className="badge badge-primary">{f.competition}</span>
                   <span className={styles.matchDateText}>{formatDate(f.date)}</span>
                   <span className={styles.matchTime}>{f.time}</span>
                 </div>
                 <div className={styles.matchTeams}>
                   {f.home ? (
                     <>
-                      <span className={`${styles.team} ${styles.teamHighlight}`}>Denny Warriors</span>
+                      <span className={`${styles.team} ${styles.teamHighlight}`}>{CLUB_NAME}</span>
                       <span className={styles.separator}>vs</span>
                       <span className={styles.team}>{f.opponent}</span>
                     </>
@@ -95,12 +96,12 @@ export default function Fixtures() {
                     <>
                       <span className={styles.team}>{f.opponent}</span>
                       <span className={styles.separator}>vs</span>
-                      <span className={`${styles.team} ${styles.teamHighlight}`}>Denny Warriors</span>
+                      <span className={`${styles.team} ${styles.teamHighlight}`}>{CLUB_NAME}</span>
                     </>
                   )}
                 </div>
                 <div className={styles.matchVenueTag}>
-                  <span className={`badge ${f.home ? 'badge-green' : 'badge-blue'}`}>
+                  <span className={`badge ${f.home ? 'badge-secondary' : 'badge-primary'}`}>
                     {f.home ? 'Home' : 'Away'}
                   </span>
                 </div>

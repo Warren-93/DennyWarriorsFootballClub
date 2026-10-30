@@ -47,8 +47,8 @@
 .field select:focus,
 .field textarea:focus {
   outline: none;
-  border-color: rgba(45, 95, 166, 0.65);
-  box-shadow: 0 0 0 4px rgba(45, 95, 166, 0.12);
+  border-color: color-mix(in srgb, var(--primary) 65%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent);
 }
 
 .field textarea {
@@ -120,9 +120,9 @@
 }
 
 .primaryButton {
-  background: linear-gradient(135deg, #2d5fa6 0%, #1e8a3c 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   color: #ffffff;
-  box-shadow: 0 16px 30px rgba(45, 95, 166, 0.22);
+  box-shadow: 0 16px 30px color-mix(in srgb, var(--primary) 22%, transparent);
 }
 
 .ghostButton {
