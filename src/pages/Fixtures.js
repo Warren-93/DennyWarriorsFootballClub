@@ -23,6 +23,8 @@ export default function Fixtures() {
   }, [seasons, season]);
 
   const params = {
+    // Matches still to be played; past ones are on the Results page.
+    status: 'upcoming',
     ...(season ? { season } : {}),
     ...(competition !== 'All' ? { competition } : {}),
   };

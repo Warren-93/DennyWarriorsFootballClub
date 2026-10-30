@@ -173,3 +173,8 @@
   border-color: var(--blue);
   color: var(--blue);
 }
+
+/* Tabs and season picker share one row; the row's own bottom margin would misalign them. */
+.filterBar .filterRow {
+  margin-bottom: 0;
+}

@@ -1,4 +1,4 @@
-import { request, buildApiUrl, getAuthToken } from './client';
+import { request, buildApiUrl, getValidAuthToken, readErrorMessage } from './client';
 
 // Not a list-envelope endpoint (GET /api/v1/media/videos returns a plain
 // array, not { data, page, size, totalElements }), so no unwrapList here.
@@ -12,7 +12,7 @@ export async function uploadMedia(file) {
   const formData = new FormData();
   formData.append('file', file);
 
-  const token = getAuthToken();
+  const token = await getValidAuthToken();
   const headers = {};
   if (token) headers.Authorization = `Bearer ${token}`;
 
@@ -23,8 +23,7 @@ export async function uploadMedia(file) {
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || `Upload failed with status ${response.status}`);
+    throw new Error(await readErrorMessage(response, `Upload failed with status ${response.status}`));
   }
 
   const payload = await response.json();

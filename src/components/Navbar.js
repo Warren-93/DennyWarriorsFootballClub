@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import styles from './Navbar.module.css';
 import Badge from './Badge';
 import useAdminRole from '../hooks/useAdminRole';
+import { useSeasons } from '../hooks';
 
 const navLinks = [
   { to: '/', label: 'Home' },
@@ -21,6 +22,8 @@ export default function Navbar() {
   const location = useLocation();
   const badgeUrl = `${process.env.PUBLIC_URL || ''}/badge.png`;
   const { loggedIn } = useAdminRole();
+  // Newest season first, from the synced fixtures.
+  const { data: seasons } = useSeasons();
   const adminPath = loggedIn ? '/admin' : '/admin/login';
 
   useEffect(() => {
@@ -63,7 +66,7 @@ export default function Navbar() {
 
         {/* Right side */}
         <div className={styles.actions}>
-          <Badge variant="blue" label="2026/27 Season" />
+          {seasons?.[0] && <Badge variant="blue" label={`${seasons[0]} Season`} />}
           <Link to={adminPath} className={styles.adminLink}>
             {loggedIn ? 'Admin' : 'Staff login'}
           </Link>

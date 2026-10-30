@@ -1,11 +1,12 @@
 import React from 'react';
-import { useLeagueTable } from '../hooks';
+import { useLeagueTable, useSeasons } from '../hooks';
 import ApiState from '../components/ApiState';
 import styles from './LeagueTable.module.css';
 import sharedStyles from './PageShared.module.css';
 
 export default function LeagueTable() {
   const { data: table, loading, error, refetch } = useLeagueTable();
+  const { data: seasons } = useSeasons();
   const badgeUrl = `${process.env.PUBLIC_URL || ''}/badge.png`;
 
   return (
@@ -13,7 +14,7 @@ export default function LeagueTable() {
       <div className={sharedStyles.pageHero}>
         <div className="container">
           <h1 className={sharedStyles.pageTitle}>League Table</h1>
-          <p className={sharedStyles.pageSubtitle}>2025/26 Season Standings</p>
+          <p className={sharedStyles.pageSubtitle}>{seasons?.[0] ? `${seasons[0]} Season Standings` : 'Season Standings'}</p>
         </div>
       </div>
 

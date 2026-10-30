@@ -23,10 +23,12 @@ import History from './pages/History';
 import Media from './pages/Media';
 import Login from './pages/admin/Login';
 import Admin from './pages/admin/Admin';
-import { getAuthToken } from './api';
+import NotFound from './pages/NotFound';
+import { hasSession } from './api';
 
 function RequireAdminAuth({ children }) {
-  if (!getAuthToken()) {
+  // False once both the access and refresh tokens have expired.
+  if (!hasSession()) {
     return <Navigate to="/admin/login" replace />;
   }
   return children;
@@ -59,7 +61,7 @@ function AppLayout() {
               </RequireAdminAuth>
             )}
           />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       {!isAdminRoute && <Footer />}

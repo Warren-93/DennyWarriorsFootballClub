@@ -25,6 +25,11 @@ export default defineConfig(({ mode }) => {
         loader: { '.js': 'jsx' },
       },
     },
+    test: {
+      environment: 'jsdom',
+      setupFiles: './src/test-setup.js',
+      css: { modules: { classNameStrategy: 'non-scoped' } },
+    },
     // Bridge CRA-style process.env.REACT_APP_* references so existing source code keeps working.
     define: {
       'process.env.NODE_ENV': JSON.stringify(mode === 'production' ? 'production' : 'development'),

@@ -32,9 +32,48 @@ const API_BASE_URL =
   getDefaultApiBaseUrl();
 
 export const AUTH_TOKEN_KEY = 'dwfc_token';
+export const REFRESH_TOKEN_KEY = 'dwfc_refresh_token';
+
 export function getAuthToken() {
   if (typeof window === 'undefined') return '';
   return window.localStorage.getItem(AUTH_TOKEN_KEY) || '';
+}
+
+export function getRefreshToken() {
+  if (typeof window === 'undefined') return '';
+  return window.localStorage.getItem(REFRESH_TOKEN_KEY) || '';
+}
+
+function setRefreshToken(token) {
+  if (typeof window === 'undefined') return;
+  if (token) window.localStorage.setItem(REFRESH_TOKEN_KEY, token);
+  else window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+}
+
+// Reads a JWT's claims (role, exp...) without verifying it. Only used to
+// decide what to show and when to refresh: the API verifies every token.
+export function decodeTokenClaims(token) {
+  if (!token) return null;
+  try {
+    const segment = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(atob(segment.padEnd(segment.length + ((4 - (segment.length % 4)) % 4), '=')));
+  } catch {
+    return null;
+  }
+}
+
+// Treat a token as expired a minute early, so it can't run out mid-request.
+const EXPIRY_MARGIN_MS = 60 * 1000;
+
+export function isTokenExpired(token) {
+  const exp = decodeTokenClaims(token)?.exp;
+  return typeof exp !== 'number' || exp * 1000 - EXPIRY_MARGIN_MS <= Date.now();
+}
+
+// True while the admin can still make authenticated requests: the access
+// token is valid, or it has expired but the refresh token can renew it.
+export function hasSession() {
+  return !isTokenExpired(getAuthToken()) || !isTokenExpired(getRefreshToken());
 }
 
 export function setAuthToken(token) {
@@ -45,6 +84,57 @@ export function setAuthToken(token) {
 export function clearAuthToken() {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(AUTH_TOKEN_KEY);
+  window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+}
+
+// The API answers errors with JSON like { status, error, message, path }.
+// Show its message rather than the raw JSON text.
+export async function readErrorMessage(response, fallback) {
+  const text = await response.text().catch(() => '');
+  try {
+    const body = JSON.parse(text);
+    if (body?.message) return body.message;
+  } catch {
+    // Not JSON (e.g. a proxy's HTML error page): fall through.
+  }
+  return text && text.length < 200 && !text.trim().startsWith('<') ? text : fallback;
+}
+
+// One refresh at a time: requests that need a new access token together all
+// wait for the same refresh instead of each spending the refresh token.
+let refreshInFlight = null;
+
+function refreshAccessToken() {
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
+      const response = await fetch(buildApiUrl('/auth/refresh'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: getRefreshToken() }),
+      }).catch(() => null);
+
+      if (!response || !response.ok) {
+        clearAuthToken();
+        throw new Error('Your session has expired. Please log in again.');
+      }
+      const { accessToken } = await response.json();
+      setAuthToken(accessToken);
+    })().finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
+}
+
+// The access token to send with a request, renewed first if it has expired
+// and a refresh token is available. Empty when not logged in.
+export async function getValidAuthToken() {
+  const token = getAuthToken();
+  if (token && isTokenExpired(token) && getRefreshToken()) {
+    await refreshAccessToken();
+    return getAuthToken();
+  }
+  return token;
 }
 
 export function buildApiUrl(path) {
@@ -63,8 +153,8 @@ async function parseResponse(response) {
   return response.text();
 }
 
-export async function request(path, options = {}) {
-  const token = getAuthToken();
+export async function request(path, options = {}, retried = false) {
+  const token = await getValidAuthToken();
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
@@ -79,9 +169,15 @@ export async function request(path, options = {}) {
     headers,
   });
 
+  // A 401 despite a fresh-looking token (e.g. the server's clock disagrees):
+  // refresh once and retry.
+  if (response.status === 401 && token && getRefreshToken() && !retried) {
+    await refreshAccessToken();
+    return request(path, options, true);
+  }
+
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || `API request failed with status ${response.status}`);
+    throw new Error(await readErrorMessage(response, `API request failed with status ${response.status}`));
   }
 
   return parseResponse(response);
@@ -133,8 +229,8 @@ export async function loginAdmin(
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || `Login failed with status ${response.status}`);
+    if (response.status === 401) throw new Error('Incorrect username or password.');
+    throw new Error(await readErrorMessage(response, `Login failed with status ${response.status}`));
   }
 
   const payload = await parseResponse(response);
@@ -145,5 +241,7 @@ export async function loginAdmin(
   }
 
   setAuthToken(token);
+  // Kept so the access token can be renewed instead of logging the admin out.
+  setRefreshToken(payload?.refreshToken || '');
   return payload;
 }

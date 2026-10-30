@@ -1,21 +1,16 @@
 import React, { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import {
-  getAuthToken,
-  loginAdmin,
-  setAuthToken,
-} from '../../api';
+import { hasSession, loginAdmin } from '../../api';
 import styles from './Admin.module.css';
 
 export default function Login() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [manualToken, setManualToken] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  if (getAuthToken()) {
+  if (hasSession()) {
     return <Navigate to="/admin" replace />;
   }
 
@@ -23,19 +18,15 @@ export default function Login() {
     event.preventDefault();
     setError('');
 
-    if (!manualToken.trim() && (!username.trim() || !password.trim())) {
-      setError('Enter a username and password, or paste a JWT token.');
+    if (!username.trim() || !password) {
+      setError('Enter your username and password.');
       return;
     }
 
     setLoading(true);
 
     try {
-      if (manualToken.trim()) {
-        setAuthToken(manualToken.trim());
-      } else {
-        await loginAdmin({ username: username.trim(), password });
-      }
+      await loginAdmin({ username: username.trim(), password });
 
       navigate('/admin', { replace: true });
     } catch (err) {
@@ -61,7 +52,7 @@ export default function Login() {
           <form className={styles.loginForm} onSubmit={handleSubmit}>
             <div className={styles.formHeader}>
               <h2>Admin login</h2>
-              <p>Use your API login details, or paste an existing JWT token.</p>
+              <p>Sign in with your staff account.</p>
             </div>
 
 
@@ -87,19 +78,6 @@ export default function Login() {
               />
             </label>
 
-            <div className={styles.orDivider}>
-              <span>or</span>
-            </div>
-
-            <label className={styles.field}>
-              <span>JWT token</span>
-              <textarea
-                value={manualToken}
-                onChange={(event) => setManualToken(event.target.value)}
-                rows={4}
-                placeholder="Paste bearer token here"
-              />
-            </label>
 
             {error ? <p className={styles.errorBanner}>{error}</p> : null}
 
