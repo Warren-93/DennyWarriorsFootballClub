@@ -4,6 +4,7 @@ import styles from './Navbar.module.css';
 import Badge from './Badge';
 import useAdminRole from '../hooks/useAdminRole';
 import { useSeasons } from '../hooks';
+import { CLUB_NAME, CLUB_NAME_LINE_1, CLUB_NAME_LINE_2 } from '../config/club';
 
 const navLinks = [
   { to: '/', label: 'Home' },
@@ -41,10 +42,10 @@ export default function Navbar() {
       <div className={`container ${styles.inner}`}>
         {/* Logo */}
         <Link to="/" className={styles.logo}>
-          <img src={badgeUrl} alt="Denny Warriors FC Badge" className={styles.badge} />
+          <img src={badgeUrl} alt={`${CLUB_NAME} badge`} className={styles.badge} />
           <div className={styles.logoText}>
-            <span className={styles.logoClub}>Denny Warriors</span>
-            <span className={styles.logoSub}>Football Club</span>
+            <span className={styles.logoClub}>{CLUB_NAME_LINE_1}</span>
+            <span className={styles.logoSub}>{CLUB_NAME_LINE_2}</span>
           </div>
         </Link>
 
@@ -66,7 +67,7 @@ export default function Navbar() {
 
         {/* Right side */}
         <div className={styles.actions}>
-          {seasons?.[0] && <Badge variant="blue" label={`${seasons[0]} Season`} />}
+          {seasons?.[0] && <Badge variant="primary" label={`${seasons[0]} Season`} />}
           <Link to={adminPath} className={styles.adminLink}>
             {loggedIn ? 'Admin' : 'Staff login'}
           </Link>

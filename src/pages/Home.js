@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useNextFixture, useRecentResults, useLatestNews, useSeasonStats } from '../hooks';
 import ApiState from '../components/ApiState';
 import styles from './Home.module.css';
+import { CLUB_NAME, CLUB_NAME_LINE_1, CLUB_NAME_LINE_2, FOUNDED } from '../config/club';
 
 function getResult(r) {
   if (r.goalsFor > r.goalsAgainst) return 'W';
@@ -43,11 +44,11 @@ export default function Home() {
       <section className={styles.hero}>
         <div className={styles.heroOverlay} />
         <div className={`container ${styles.heroContent}`}>
-          <img src={badgeUrl} alt="Denny Warriors FC" className={styles.heroBadge} />
-          <h1 className={styles.heroTitle}>Denny Warriors<br />Football Club</h1>
-          <p className={styles.heroSub}>Est. 2020</p>
+          <img src={badgeUrl} alt={`${CLUB_NAME} badge`} className={styles.heroBadge} />
+          <h1 className={styles.heroTitle}>{CLUB_NAME_LINE_1}<br />{CLUB_NAME_LINE_2}</h1>
+          <p className={styles.heroSub}>Est. {FOUNDED}</p>
           <div className={styles.heroButtons}>
-            <Link to="/fixtures" className="btn btn-primary">View Fixtures</Link>
+            <Link to="/fixtures" className="btn btn-light">View Fixtures</Link>
             <Link to="/squad" className="btn btn-secondary">Meet the Squad</Link>
           </div>
         </div>
@@ -87,12 +88,12 @@ export default function Home() {
             {nextFixture && (
               <div className={styles.nextFixture}>
                 <div className={styles.nextFixtureLabel}>
-                  <span className="badge badge-green">Next Match</span>
+                  <span className="badge badge-secondary">Next Match</span>
                 </div>
                 <div className={styles.matchup}>
                   <div className={styles.team}>
-                    <img src={badgeUrl} alt="Denny Warriors" className={styles.teamBadge} />
-                    <span>Denny Warriors</span>
+                    <img src={badgeUrl} alt="" className={styles.teamBadge} />
+                    <span>{CLUB_NAME}</span>
                   </div>
                   <div className={styles.vsBlock}>
                     <span className={styles.vs}>VS</span>
@@ -101,7 +102,7 @@ export default function Home() {
                     <span className={styles.matchVenue}>
                       {nextFixture.home ? 'Home' : 'Away'}
                     </span>
-                    <span className="badge badge-blue">{nextFixture.competition}</span>
+                    <span className="badge badge-primary">{nextFixture.competition}</span>
                   </div>
                   <div className={`${styles.team} ${styles.teamRight}`}>
                     <div className={styles.opponentPlaceholder}>
@@ -145,7 +146,7 @@ export default function Home() {
                       {r.goalsFor} – {r.goalsAgainst}
                     </span>
                     <span className={`badge badge-result-${result.toLowerCase()}`}>{result}</span>
-                    <span className="badge badge-blue">{r.competition}</span>
+                    <span className="badge badge-primary">{r.competition}</span>
                   </div>
                 );
               })}
@@ -175,7 +176,7 @@ export default function Home() {
               {latestNews?.map((item) => (
                 <article key={item.id} className={styles.newsCard}>
                   <div className={styles.newsCardTop}>
-                    <span className="badge badge-blue">{item.category}</span>
+                    <span className="badge badge-primary">{item.category}</span>
                     <time className={styles.newsDate}>{formatDate(item.date)}</time>
                   </div>
                   <h3 className={styles.newsTitle}>{item.title}</h3>

@@ -8,7 +8,7 @@
   min-height: 560px;
   display: flex;
   align-items: center;
-  background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 50%, var(--green-dark) 100%);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--secondary-dark) 100%);
   overflow: hidden;
 }
 
@@ -30,6 +30,10 @@
 }
 
 .heroBadge {
+  /* White disc behind the red crest, as in the navbar. */
+  background: var(--white);
+  border-radius: 50%;
+  padding: 4px;
   height: 120px;
   width: auto;
   filter: drop-shadow(0 8px 24px rgba(0,0,0,0.3));
@@ -204,7 +208,7 @@
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
-  color: var(--blue);
+  color: var(--primary);
 }
 
 .matchVenue {

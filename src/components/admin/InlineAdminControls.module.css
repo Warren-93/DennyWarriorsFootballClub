@@ -9,7 +9,7 @@
   padding: 0 20px;
   border-radius: 8px;
   border: none;
-  background: linear-gradient(135deg, #2d5fa6 0%, #1e8a3c 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   color: #ffffff;
   font-family: var(--font-display);
   font-size: 0.85rem;
@@ -17,7 +17,7 @@
   letter-spacing: 0.3px;
   text-transform: uppercase;
   cursor: pointer;
-  box-shadow: 0 12px 24px rgba(45, 95, 166, 0.25);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--primary) 25%, transparent);
   transition: transform 0.18s ease;
 }
 
@@ -68,7 +68,7 @@
   border-radius: 6px;
   border: 1px solid rgba(15, 23, 32, 0.14);
   background: #ffffff;
-  color: #1e4278;
+  color: var(--primary-dark);
   font-size: 0.74rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -76,7 +76,7 @@
 }
 
 .inlineButton:hover {
-  background: rgba(45, 95, 166, 0.08);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
 }
 
 .inlineButtonDanger {

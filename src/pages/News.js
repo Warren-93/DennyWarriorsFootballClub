@@ -110,7 +110,7 @@ export default function News() {
                 )}
 
                 <div className={styles.cardMeta}>
-                  <span className="badge badge-blue">{item.category}</span>
+                  <span className="badge badge-primary">{item.category}</span>
                   <time className={styles.date}>{formatDate(item.date)}</time>
                 </div>
                 <h2 className={styles.title}>{item.title}</h2>

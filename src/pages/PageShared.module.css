@@ -4,7 +4,7 @@
 }
 
 .pageHero {
-  background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 100%);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
   padding: 56px 0 48px;
 }
 
@@ -67,7 +67,7 @@
   font-family: var(--font-display);
   font-size: 16px;
   font-weight: 700;
-  color: var(--blue);
+  color: var(--primary);
 }
 
 .matchTeams {
@@ -86,7 +86,7 @@
 }
 
 .teamHighlight {
-  color: var(--blue);
+  color: var(--primary);
 }
 
 .separator {
@@ -136,13 +136,13 @@
 }
 
 .filterBtn:hover {
-  border-color: var(--blue);
-  color: var(--blue);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .filterActive {
-  background: var(--blue);
-  border-color: var(--blue);
+  background: var(--primary);
+  border-color: var(--primary);
   color: var(--white) !important;
 }
 
@@ -170,8 +170,8 @@
 }
 
 .filterSelect:hover {
-  border-color: var(--blue);
-  color: var(--blue);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 /* Tabs and season picker share one row; the row's own bottom margin would misalign them. */

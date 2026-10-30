@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { hasSession, loginAdmin } from '../../api';
 import styles from './Admin.module.css';
+import { CLUB_NAME } from '../../config/club';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ export default function Login() {
     <div className={styles.adminShell}>
       <div className={styles.loginLayout}>
         <section className={styles.loginIntro}>
-          <span className={styles.eyebrow}>Denny Warriors FC</span>
+          <span className={styles.eyebrow}>{CLUB_NAME}</span>
           <h1 className={styles.loginTitle}>Admin control room</h1>
           <p className={styles.loginCopy}>
             Sign in to manage fixtures, results, squad updates, news posts, and the league table.

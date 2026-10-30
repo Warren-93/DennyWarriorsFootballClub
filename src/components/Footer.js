@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Footer.module.css';
+import { AFFILIATION, CLUB_NAME, CONTACT_EMAIL, FACEBOOK_URL, FOUNDED, INSTAGRAM_URL } from '../config/club';
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -9,10 +10,10 @@ export default function Footer() {
     <footer className={styles.footer}>
       <div className={`container ${styles.inner}`}>
         <div className={styles.brand}>
-          <img src={badgeUrl} alt="Denny Warriors FC" className={styles.badge} />
+          <img src={badgeUrl} alt={`${CLUB_NAME} badge`} className={styles.badge} />
           <div>
-            <p className={styles.name}>Denny Warriors F.C.</p>
-            <p className={styles.tagline}>Pride of Denny · Est. 2020</p>
+            <p className={styles.name}>{CLUB_NAME}</p>
+            <p className={styles.tagline}>{AFFILIATION} · Est. {FOUNDED}</p>
           </div>
         </div>
 
@@ -31,15 +32,15 @@ export default function Footer() {
           </div>
           <div className={styles.linkGroup}>
             <p className={styles.linkGroupTitle}>Contact</p>
-            <a href="mailto:info@dennywarriorsfc.com">Email Us</a>
-            <a href="https://www.facebook.com/" target="_blank" rel="noreferrer">Facebook</a>
-            <a href="https://www.instagram.com/" target="_blank" rel="noreferrer">Instagram</a>
+            <a href={`mailto:${CONTACT_EMAIL}`}>Email Us</a>
+            <a href={FACEBOOK_URL} target="_blank" rel="noreferrer">Facebook</a>
+            <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer">Instagram</a>
           </div>
         </div>
       </div>
 
       <div className={styles.bottom}>
-        <p>© {year} Denny Warriors F.C. All rights reserved.</p>
+        <p>© {year} {CLUB_NAME}. All rights reserved.</p>
       </div>
     </footer>
   );

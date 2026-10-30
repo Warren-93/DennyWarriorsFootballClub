@@ -62,17 +62,17 @@
 
 .urlInput:focus {
   outline: none;
-  border-color: rgba(45, 95, 166, 0.65);
-  box-shadow: 0 0 0 4px rgba(45, 95, 166, 0.12);
+  border-color: color-mix(in srgb, var(--primary) 65%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent);
 }
 
 .uploadButton {
   min-height: 48px;
   padding: 0 16px;
   border-radius: 8px;
-  border: 1px solid rgba(45, 95, 166, 0.25);
-  background: rgba(45, 95, 166, 0.08);
-  color: #1e4278;
+  border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  color: var(--primary-dark);
   font-family: var(--font-display);
   font-size: 0.9rem;
   font-weight: 700;

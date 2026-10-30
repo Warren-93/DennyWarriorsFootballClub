@@ -67,6 +67,14 @@ describe('site', () => {
     expect(await screen.findByText('2026/27 Season')).toBeInTheDocument();
   });
 
+  it('shows the club name and badge in the navbar', () => {
+    renderAt(<Navbar />);
+
+    expect(screen.getByText('Camelon Juniors')).toBeInTheDocument();
+    expect(screen.getByAltText('Camelon Juniors Warriors badge')).toBeInTheDocument();
+    expect(screen.queryByText(/Denny/)).not.toBeInTheDocument();
+  });
+
   it('asks the API for upcoming fixtures only on the Fixtures page', async () => {
     renderAt(<Fixtures />);
 

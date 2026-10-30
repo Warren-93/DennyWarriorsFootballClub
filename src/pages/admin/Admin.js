@@ -23,6 +23,7 @@ import PlayerFormModal from '../../components/admin/PlayerFormModal';
 import ArticleFormModal from '../../components/admin/ArticleFormModal';
 import HistoryEntryFormModal from '../../components/admin/HistoryEntryFormModal';
 import styles from './Admin.module.css';
+import { CLUB_NAME } from '../../config/club';
 
 const DEFAULT_SECTION = 'sync';
 
@@ -807,7 +808,7 @@ export default function Admin() {
       <div className={styles.adminFrame}>
         <header className={styles.adminHeader}>
           <div>
-            <span className={styles.eyebrow}>Denny Warriors FC</span>
+            <span className={styles.eyebrow}>{CLUB_NAME}</span>
             <h1 className={styles.pageTitle}>Admin dashboard</h1>
             <p className={styles.pageSubtitle}>{SECTION_META[activeSection].description}</p>
           </div>

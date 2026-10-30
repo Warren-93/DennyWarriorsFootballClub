@@ -25,7 +25,7 @@ export default function ArticleDetail() {
             {article && (
               <>
                 <div className={styles.meta}>
-                  <span className="badge badge-blue">{article.category}</span>
+                  <span className="badge badge-primary">{article.category}</span>
                   <time className={styles.date}>{formatDate(article.date)}</time>
                 </div>
                 <h1 className={styles.title}>{article.title}</h1>

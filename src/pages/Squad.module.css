@@ -21,13 +21,13 @@
 }
 
 .filterBtn:hover {
-  border-color: var(--blue);
-  color: var(--blue);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .filterActive {
-  background: var(--blue);
-  border-color: var(--blue);
+  background: var(--primary);
+  border-color: var(--primary);
   color: var(--white) !important;
 }
 
@@ -38,7 +38,9 @@
 }
 
 .card {
-  --accent: #9fd8e2;
+  /* A lighter tint of the brand red: plain --primary is too dark to read on
+     this charcoal card (3.7:1); this tint is 5:1. */
+  --accent: #F5585E;
 
   position: relative;
   display: flex;

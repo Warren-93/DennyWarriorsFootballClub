@@ -5,12 +5,12 @@
   right: 0;
   z-index: 100;
   height: var(--nav-height);
-  background: var(--blue);
+  background: var(--primary);
   transition: box-shadow 0.3s ease, background 0.3s ease;
 }
 
 .header.scrolled {
-  background: var(--blue-dark);
+  background: var(--primary-dark);
   box-shadow: 0 2px 20px rgba(0,0,0,0.2);
 }
 
@@ -29,6 +29,11 @@
 }
 
 .badge {
+  /* The crest is red and white, so it sits on a white disc to stand out
+     from the red header. */
+  background: var(--white);
+  border-radius: 50%;
+  padding: 2px;
   height: 48px;
   width: auto;
 }
@@ -92,7 +97,7 @@
   left: 12px;
   right: 12px;
   height: 2px;
-  background: var(--green);
+  background: var(--secondary);
   border-radius: 1px;
 }
 
@@ -153,7 +158,7 @@
 .mobileMenu {
   display: none;
   flex-direction: column;
-  background: var(--blue-dark);
+  background: var(--primary-dark);
   padding: 8px 0 16px;
   border-top: 1px solid rgba(255,255,255,0.1);
 }
