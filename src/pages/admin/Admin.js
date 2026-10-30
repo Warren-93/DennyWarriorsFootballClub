@@ -46,6 +46,7 @@ const SECTION_META = {
   users: {
     label: 'Users',
     description: 'Admin accounts. Only super-admins can create new users.',
+    superAdminOnly: true,
   },
 };
 
@@ -59,6 +60,7 @@ function formatDateTimeLabel(value) {
 }
 
 function SyncPanel() {
+  const { canEdit } = useAdminRole();
   const [logs, setLogs] = useState([]);
   const [fixtures, setFixtures] = useState([]);
   const [table, setTable] = useState([]);
@@ -141,14 +143,16 @@ function SyncPanel() {
       ) : null}
 
       <div className={styles.headerActions} style={{ marginBottom: 20 }}>
-        <button
-          type="button"
-          className={styles.primaryButton}
-          onClick={handleTrigger}
-          disabled={triggering || loading}
-        >
-          {triggering ? 'Syncing…' : 'Trigger sync now'}
-        </button>
+        {canEdit && (
+          <button
+            type="button"
+            className={styles.primaryButton}
+            onClick={handleTrigger}
+            disabled={triggering || loading}
+          >
+            {triggering ? 'Syncing…' : 'Trigger sync now'}
+          </button>
+        )}
         <button type="button" className={styles.ghostButton} onClick={load} disabled={loading}>
           Refresh
         </button>
@@ -160,21 +164,23 @@ function SyncPanel() {
           ? `Currently syncing automatically every ${intervalDays} day(s). Fixtures and the league table only change weekly, so daily (or less often) is usually enough.`
           : 'Loading current interval...'}
       </p>
-      <form onSubmit={handleSaveInterval} style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 28 }}>
-        <label className={styles.field} style={{ maxWidth: 160 }}>
-          <span>Interval (days)</span>
-          <input
-            type="number"
-            min="1"
-            value={intervalInput}
-            onChange={(event) => setIntervalInput(event.target.value)}
-            required
-          />
-        </label>
-        <button type="submit" className={styles.secondaryButton} disabled={savingInterval || loading}>
-          {savingInterval ? 'Saving…' : 'Save interval'}
-        </button>
-      </form>
+      {canEdit && (
+        <form onSubmit={handleSaveInterval} style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 28 }}>
+          <label className={styles.field} style={{ maxWidth: 160 }}>
+            <span>Interval (days)</span>
+            <input
+              type="number"
+              min="1"
+              value={intervalInput}
+              onChange={(event) => setIntervalInput(event.target.value)}
+              required
+            />
+          </label>
+          <button type="submit" className={styles.secondaryButton} disabled={savingInterval || loading}>
+            {savingInterval ? 'Saving…' : 'Save interval'}
+          </button>
+        </form>
+      )}
 
       <h3 className={styles.recordTitle}>Recent sync runs</h3>
       <div className={styles.recordList}>
@@ -242,6 +248,7 @@ function SyncPanel() {
 }
 
 function SquadPanel() {
+  const { canEdit } = useAdminRole();
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -312,9 +319,11 @@ function SquadPanel() {
       ) : null}
 
       <div className={styles.headerActions} style={{ marginBottom: 20 }}>
-        <button type="button" className={styles.primaryButton} onClick={openAdd}>
-          + Add player
-        </button>
+        {canEdit && (
+          <button type="button" className={styles.primaryButton} onClick={openAdd}>
+            + Add player
+          </button>
+        )}
         <button type="button" className={styles.ghostButton} onClick={load} disabled={loading}>
           Refresh
         </button>
@@ -339,14 +348,16 @@ function SquadPanel() {
                 <span className={styles.recordBadge}>{item.position}</span>
               </div>
 
-              <div className={styles.cardActions}>
-                <button type="button" className={styles.secondaryButton} onClick={() => openEdit(item)}>
-                  Edit
-                </button>
-                <button type="button" className={styles.dangerButton} onClick={() => handleDelete(item)}>
-                  Delete
-                </button>
-              </div>
+              {canEdit && (
+  <div className={styles.cardActions}>
+                  <button type="button" className={styles.secondaryButton} onClick={() => openEdit(item)}>
+                    Edit
+                  </button>
+                  <button type="button" className={styles.dangerButton} onClick={() => handleDelete(item)}>
+                    Delete
+                  </button>
+                </div>
+              )}
             </article>
           ))
         )}
@@ -363,6 +374,7 @@ function SquadPanel() {
 }
 
 function NewsPanel() {
+  const { canEdit } = useAdminRole();
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -432,9 +444,11 @@ function NewsPanel() {
       ) : null}
 
       <div className={styles.headerActions} style={{ marginBottom: 20 }}>
-        <button type="button" className={styles.primaryButton} onClick={openAdd}>
-          + Add article
-        </button>
+        {canEdit && (
+          <button type="button" className={styles.primaryButton} onClick={openAdd}>
+            + Add article
+          </button>
+        )}
         <button type="button" className={styles.ghostButton} onClick={load} disabled={loading}>
           Refresh
         </button>
@@ -458,14 +472,16 @@ function NewsPanel() {
                   <span className={styles.recordBadge}>{item.published ? 'Published' : 'Draft'}</span>
                 </div>
 
-                <div className={styles.cardActions}>
-                  <button type="button" className={styles.secondaryButton} onClick={() => openEdit(item)}>
-                    Edit
-                  </button>
-                  <button type="button" className={styles.dangerButton} onClick={() => handleDelete(item)}>
-                    Delete
-                  </button>
-                </div>
+                {canEdit && (
+  <div className={styles.cardActions}>
+                    <button type="button" className={styles.secondaryButton} onClick={() => openEdit(item)}>
+                      Edit
+                    </button>
+                    <button type="button" className={styles.dangerButton} onClick={() => handleDelete(item)}>
+                      Delete
+                    </button>
+                  </div>
+                )}
               </article>
             );
           })
@@ -483,6 +499,7 @@ function NewsPanel() {
 }
 
 function HistoryPanel() {
+  const { canEdit } = useAdminRole();
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -552,9 +569,11 @@ function HistoryPanel() {
       ) : null}
 
       <div className={styles.headerActions} style={{ marginBottom: 20 }}>
-        <button type="button" className={styles.primaryButton} onClick={openAdd}>
-          + Add entry
-        </button>
+        {canEdit && (
+          <button type="button" className={styles.primaryButton} onClick={openAdd}>
+            + Add entry
+          </button>
+        )}
         <button type="button" className={styles.ghostButton} onClick={load} disabled={loading}>
           Refresh
         </button>
@@ -574,14 +593,16 @@ function HistoryPanel() {
                 <span className={styles.recordBadge}>{item.type}</span>
               </div>
 
-              <div className={styles.cardActions}>
-                <button type="button" className={styles.secondaryButton} onClick={() => openEdit(item)}>
-                  Edit
-                </button>
-                <button type="button" className={styles.dangerButton} onClick={() => handleDelete(item)}>
-                  Delete
-                </button>
-              </div>
+              {canEdit && (
+  <div className={styles.cardActions}>
+                  <button type="button" className={styles.secondaryButton} onClick={() => openEdit(item)}>
+                    Edit
+                  </button>
+                  <button type="button" className={styles.dangerButton} onClick={() => handleDelete(item)}>
+                    Delete
+                  </button>
+                </div>
+              )}
             </article>
           ))
         )}
@@ -768,7 +789,12 @@ export default function Admin() {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState(DEFAULT_SECTION);
 
-  const sectionKeys = useMemo(() => Object.keys(SECTION_META), []);
+  const { isSuperAdmin } = useAdminRole();
+  // Hide tabs the user's role can't use; the API refuses them regardless.
+  const sectionKeys = useMemo(
+    () => Object.keys(SECTION_META).filter((key) => !SECTION_META[key].superAdminOnly || isSuperAdmin),
+    [isSuperAdmin],
+  );
   const ActivePanel = SECTION_PANELS[activeSection];
 
   function handleLogout() {

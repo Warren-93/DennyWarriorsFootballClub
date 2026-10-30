@@ -1,37 +1,47 @@
-import { useMemo } from 'react';
-import { getAuthToken } from '../api/client';
+import { useEffect, useState } from 'react';
+import {
+  AUTH_TOKEN_KEY,
+  REFRESH_TOKEN_KEY,
+  decodeTokenClaims,
+  getAuthToken,
+  getRefreshToken,
+  hasSession,
+} from '../api/client';
 
-function base64UrlDecode(segment) {
-  const normalized = segment.replace(/-/g, '+').replace(/_/g, '/');
-  const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
-  return atob(padded);
-}
-
-function decodeRole(token) {
-  if (!token) return null;
-
-  try {
-    const payloadSegment = token.split('.')[1];
-    const claims = JSON.parse(base64UrlDecode(payloadSegment));
-    return claims.role || null;
-  } catch {
-    return null;
-  }
+function readRole() {
+  if (!hasSession()) return null;
+  // The access token may have expired (the next request renews it); the
+  // refresh token carries the same role.
+  return decodeTokenClaims(getAuthToken())?.role || decodeTokenClaims(getRefreshToken())?.role || null;
 }
 
 // Client-side role read for UI-gating only — mirrors the backend's actual
 // write permissions in SecurityConfig (SUPER_ADMIN/EDITOR can write, VIEWER
 // can't) so a VIEWER account never sees controls it can't use. Real
 // enforcement always happens server-side regardless of this.
+//
+// Re-reads when the window regains focus or another tab logs in or out, so
+// an expired login stops showing admin controls without a page reload.
 export default function useAdminRole() {
-  const token = getAuthToken();
+  const [role, setRole] = useState(readRole);
 
-  return useMemo(() => {
-    const role = decodeRole(token);
-    return {
-      loggedIn: Boolean(token),
-      role,
-      canEdit: role === 'SUPER_ADMIN' || role === 'EDITOR',
+  useEffect(() => {
+    const update = () => setRole(readRole());
+    const onStorage = (event) => {
+      if (event.key === null || event.key === AUTH_TOKEN_KEY || event.key === REFRESH_TOKEN_KEY) update();
     };
-  }, [token]);
+    window.addEventListener('focus', update);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('focus', update);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  return {
+    loggedIn: Boolean(role),
+    role,
+    canEdit: role === 'SUPER_ADMIN' || role === 'EDITOR',
+    isSuperAdmin: role === 'SUPER_ADMIN',
+  };
 }

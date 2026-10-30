@@ -208,3 +208,8 @@
   color: rgba(255, 255, 255, 0.55);
   white-space: nowrap;
 }
+
+/* Room for the editor's ✎/✕ controls so they don't cover the shirt number. */
+.editable .headerRow {
+  padding-right: 72px;
+}

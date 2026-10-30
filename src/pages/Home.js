@@ -16,11 +16,18 @@ function formatDate(dateStr) {
   });
 }
 
-function ordinal(n) {
-  if (n === 1) return '1st';
-  if (n === 2) return '2nd';
-  if (n === 3) return '3rd';
-  return `${n}th`;
+// 1st, 2nd, 3rd, 4th ... 11th, 12th, 13th ... 21st, 22nd. Empty when unknown.
+export function ordinal(n) {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return '';
+  const value = Number(n);
+  const lastTwo = value % 100;
+  if (lastTwo >= 11 && lastTwo <= 13) return `${value}th`;
+  switch (value % 10) {
+    case 1: return `${value}st`;
+    case 2: return `${value}nd`;
+    case 3: return `${value}rd`;
+    default: return `${value}th`;
+  }
 }
 
 export default function Home() {
@@ -53,7 +60,7 @@ export default function Home() {
             <div className={styles.statsLoading}>Loading season stats…</div>
           ) : (
             [
-              { label: 'League Position', value: ordinal(stats.leaguePosition) },
+              ...(stats.leaguePosition ? [{ label: 'League Position', value: ordinal(stats.leaguePosition) }] : []),
               { label: 'Points',          value: stats.points },
               { label: 'Wins',            value: stats.won },
               { label: 'Goals For',       value: stats.goalsFor },

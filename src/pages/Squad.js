@@ -67,7 +67,7 @@ export default function Squad() {
       <div className={sharedStyles.pageHero}>
         <div className="container">
           <h1 className={sharedStyles.pageTitle}>Squad</h1>
-          <p className={sharedStyles.pageSubtitle}>2026/27 First Team</p>
+          <p className={sharedStyles.pageSubtitle}>First Team</p>
         </div>
       </div>
 
@@ -108,7 +108,7 @@ export default function Squad() {
               const sponsors = player.sponsorLogos || [];
 
               return (
-                <div key={player.id || `${name}-${number}`} className={styles.card}>
+                <div key={player.id || `${name}-${number}`} className={`${styles.card} ${canEdit ? styles.editable : ''}`}>
                   {canEdit && (
                     <div className={adminStyles.cardControls}>
                       <button
